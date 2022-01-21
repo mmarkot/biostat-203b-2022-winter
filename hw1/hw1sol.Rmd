@@ -88,7 +88,7 @@ files without decompressing them.
 
 
 4. What's the output of following bash script?
-    ```{bash, eval=F}
+    ```{bash, eval=T}
     for datafile in /mnt/mimiciv/1.0/core/*.gz
       do
         ls -l $datafile
@@ -96,7 +96,28 @@ files without decompressing them.
     ```
 Display the number of lines in each data file using a similar loop.
 
+```{bash, eval=T}
+for datafile in /mnt/mimiciv/1.0/core/*.gz
+  do
+    wc -l  $datafile
+  done
+```
+
 5. Display the first few lines of `admissions.csv.gz`. How many rows are in this data file? How many unique patients (identified by `subject_id`) are in this data file? (Hint: combine Linux commands `zcat`, `head`/`tail`, `awk`, `sort`, `uniq`, `wc`, and so on.)
+
+**Solution:** Display first few lines of 'admissions.csv.gz'
+```{bash}
+zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | head -10
+```
+**Solution:** Number of Rows.
+```{bash}
+wc -l < /mnt/mimiciv/1.0/core/admissions.csv.gz
+```
+
+**Solution:** Number of Unique patients.
+```{bash}
+awk -F: '{ print $1 }' /mnt/mimiciv/1.0/core/admissions.csv.gz | sort | uniq | wc -l
+```
 
 6. What are the possible values taken by each of the variable `admission_type`, `admission_location`, `insurance`, and `ethnicity`? Also report the count for each unique value of these variables. (Hint: combine Linux commands `zcat`, `head`/`tail`, `awk`, `uniq -c`, `wc`, and so on.)
 
