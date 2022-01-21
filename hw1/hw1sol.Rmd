@@ -49,7 +49,43 @@ Please, do **not** put these data files into Git; they are big. Do **not** copy 
 
 2. Display the contents in the folders `core`, `hosp`, `icu`. Why are these data files distributed as `.csv.gz` files instead of `.csv` (comma separated values) files? Read the page <https://mimic.mit.edu/docs/iv/> to understand what's in each folder.
 
+**Solution:** Contents of the folder 'core' are
+```{bash}
+ls -l /mnt/mimiciv/1.0/core
+```
+
+**Solution:** Contents of the folder 'hosp' are
+```{bash}
+ls -l /mnt/mimiciv/1.0/hosp
+```
+
+**Solution:** Contents of the folder 'icu' are
+```{bash}
+ls -l /mnt/mimiciv/1.0/icu
+```
+
+**Explanation of .csv.gz:** These data files are distributed as '.csv.gz' files
+instead of '.csv' files because they are very large. '.csv.gz' files are 
+compressed storage files better suited for transportation, according to this 
+[website](https://www.citiprogram.org/verify/?k0b2326ad-f7c8-4a49-9abb-cd7e67fef198-46693836) 
+on gz files.
+
 3. Briefly describe what bash commands `zcat`, `zless`, `zmore`, and `zgrep` do.
+
+**'zcat' Explanation:** This command displays the contents of gziped compressed 
+file without decompressing it.
+<p/>
+**'zless' Explanation:** This command is identical to the 'less' command as it 
+browses a text file allowing scrolling through input and does not need to read 
+the whole file but is used for gzipped compressed files.
+<p/>
+**'zmore' Explanation:** This command is identical to the 'more' command as it 
+browses a text file screen by screen but is used for gzipped compressed files.
+<p/>
+**'zgrep' Explanation:** This command is identical to the 'grep' command as it 
+prints all lines that match an expression but is used for gzipped compressed 
+files without decompressing them.
+
 
 4. What's the output of following bash script?
     ```{bash, eval=F}
