@@ -409,6 +409,34 @@ pre code {
 <ol style="list-style-type: decimal">
 <li><p>You and your friend just have finished reading <em>Pride and Prejudice</em> by Jane Austen. Among the four main characters in the book, Elizabeth, Jane, Lydia, and Darcy, your friend thinks that Darcy was the most mentioned. You, however, are certain it was Elizabeth. Obtain the full text of the novel from <a href="http://www.gutenberg.org/cache/epub/42671/pg42671.txt" class="uri">http://www.gutenberg.org/cache/epub/42671/pg42671.txt</a> and save to your local folder.</p>
 <pre class="bash"><code>wget -nc http://www.gutenberg.org/cache/epub/42671/pg42671.txt</code></pre>
+<pre><code>## --2022-01-21 23:32:39--  http://www.gutenberg.org/cache/epub/42671/pg42671.txt
+## Resolving www.gutenberg.org (www.gutenberg.org)... 152.19.134.47, 2610:28:3090:3000:0:bad:cafe:47
+## Connecting to www.gutenberg.org (www.gutenberg.org)|152.19.134.47|:80... connected.
+## HTTP request sent, awaiting response... 302 Found
+## Location: https://www.gutenberg.org/cache/epub/42671/pg42671.txt [following]
+## --2022-01-21 23:32:40--  https://www.gutenberg.org/cache/epub/42671/pg42671.txt
+## Connecting to www.gutenberg.org (www.gutenberg.org)|152.19.134.47|:443... connected.
+## HTTP request sent, awaiting response... 200 OK
+## Length: 725060 (708K) [text/plain]
+## Saving to: ‘pg42671.txt’
+## 
+##      0K .......... .......... .......... .......... ..........  7%  703K 1s
+##     50K .......... .......... .......... .......... .......... 14%  701K 1s
+##    100K .......... .......... .......... .......... .......... 21%  117M 1s
+##    150K .......... .......... .......... .......... .......... 28%  150M 0s
+##    200K .......... .......... .......... .......... .......... 35%  704K 0s
+##    250K .......... .......... .......... .......... .......... 42%  187M 0s
+##    300K .......... .......... .......... .......... .......... 49%  169M 0s
+##    350K .......... .......... .......... .......... .......... 56%  127M 0s
+##    400K .......... .......... .......... .......... .......... 63%  713K 0s
+##    450K .......... .......... .......... .......... .......... 70%  133M 0s
+##    500K .......... .......... .......... .......... .......... 77%  139M 0s
+##    550K .......... .......... .......... .......... .......... 84%  149M 0s
+##    600K .......... .......... .......... .......... .......... 91%  130M 0s
+##    650K .......... .......... .......... .......... .......... 98%  130M 0s
+##    700K ........                                              100%  140M=0.3s
+## 
+## 2022-01-21 23:32:40 (2.41 MB/s) - ‘pg42671.txt’ saved [725060/725060]</code></pre>
 <p>Explain what <code>wget -nc</code> does. Do <strong>not</strong> put this text file <code>pg42671.txt</code> in Git. Complete the following loop to tabulate the number of times each of the four characters is mentioned using Linux commands.</p>
 <pre class="bash"><code>wget -nc http://www.gutenberg.org/cache/epub/42671/pg42671.txt
 for char in Elizabeth Jane Lydia Darcy
