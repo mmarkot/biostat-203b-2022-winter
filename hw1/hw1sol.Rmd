@@ -222,10 +222,123 @@ Using `chmod` make the file executable by the owner, and run
     ```
 Explain the output. Explain the meaning of `"$1"`, `"$2"`, and `"$3"` in this shell script. Why do we need the first line of the shell script?
 
-**Solution:** `"$1"`, `"$2"`, and `"$3"` ensure that the entire argument is captured since not having quotes could result in the loss of white space. The first line of the script makes this script compatible with whatever system shell is running the script.
-
-
+**Solution:** `"$1"`, `"$2"`, and `"$3"` ensure that the entire argument is 
+captured since not having quotes could result in the loss of white space. The 
+first line of the script makes this script compatible with whatever system 
+shell is running the script.
 
 ### Q5. More fun with Linux
 
 Try following commands in Bash and interpret the results: `cal`, `cal 2021`, `cal 9 1752` (anything unusual?), `date`, `hostname`, `arch`, `uname -a`, `uptime`, `who am i`, `who`, `w`, `id`, `last | head`, `echo {con,pre}{sent,fer}{s,ed}`, `time sleep 5`, `history | tail`.
+
+```{bash}
+cal
+```
+
+**Solution:** Returns a calendar for the current month.
+
+```{bash}
+cal 2021
+```
+
+**Solution:** Returns a calendar for the year 2021.
+
+```{bash}
+cal 9 1752
+```
+
+**Solution:** Returns a calendar for the 9th month in 1752 (September). 
+According to Google, the British switched from the Julian calendar to the 
+Gregorian calendar this year which resulted in September 3 becoming 14.
+
+```{bash}
+date
+```
+
+**Solution:** Returns the date and time in the UTC (GMT) time zone which is 8 
+hours ahead of PST.
+
+```{bash}
+hostname
+```
+
+**Solution:** Returns the name of the teaching server which is the host of this 
+session.
+
+```{bash}
+arch
+```
+
+**Solution:** Returns the computer architecture or the type of computer.
+
+```{bash}
+uname -a
+```
+
+**Solution:** Returns the computer operating system, and the -a makes it return 
+other information as well system name, operating system version, machine ID, 
+release number, and node name.
+
+```{bash}
+uptime
+```
+
+**Solution:** Returns the total amount of time the computer has been running, 
+number of users, and load averages.
+
+```{bash}
+whoami
+```
+
+**Solution:** Returns my username from the teaching server.
+
+```{bash}
+who
+```
+
+**Solution:** Returns the list of logged users on the teaching server.
+
+```{bash}
+w
+```
+
+**Solution:** Returns the list of logged users and how long they have been on 
+the teaching server. Also shows when they logged in, and how long they have 
+been idle, as well as JCPU and PCPU and what shell for example bash.
+
+```{bash}
+id
+```
+
+**Solution:** Returns my user id, my teaching server group id, my gid, and 
+system information.
+
+```{bash}
+last | head
+```
+
+**Solution:** Returns the last user sessions on the teaching server along with 
+usernames and login and logout times.
+
+```{bash}
+echo {con,pre}{sent,fer}{s,ed}
+```
+
+**Solution:** Returns all combinations of combining each of the first list of 
+strings with each of the second and third lists. 8 total combinations are 
+returned because we multiply '2x2x2' for total combinations.
+
+```{bash}
+time sleep 5
+```
+
+**Solution:** Returns the amount of time it will take to complete a task that is
+slept for 5 minutes in real, user, and system time. Real is the only one to 
+account for the 5 minute sleep delay.
+
+```{bash, eval = FALSE}
+history
+```
+
+**Solution:** Returns the the last 10 commands entered into the terminal.
+
