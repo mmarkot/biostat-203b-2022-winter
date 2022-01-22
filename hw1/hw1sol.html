@@ -315,16 +315,19 @@ pre code {
 ## 17991012,24298836,2181-07-10 20:28:00,2181-07-12 15:49:00,,ELECTIVE,,HOME,Other,ENGLISH,,WHITE,,,0
 ## 16865435,23216961,2185-07-19 02:12:00,2185-07-21 11:50:00,,ELECTIVE,,HOME,Other,ENGLISH,,WHITE,,,0</code></pre>
 <p><strong>Solution:</strong> Number of Rows.</p>
-<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $6 }&#39; | wc -l</code></pre>
+<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $6 }&#39; | 
+wc -l</code></pre>
 <pre><code>## 523740</code></pre>
 <p><strong>Solution:</strong> Number of Unique patients.</p>
-<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $1 }&#39; | sort | uniq | wc -l</code></pre>
+<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $1 }&#39; | 
+sort | uniq | wc -l</code></pre>
 <pre><code>## 256878</code></pre>
 <ol start="6" style="list-style-type: decimal">
 <li>What are the possible values taken by each of the variable <code>admission_type</code>, <code>admission_location</code>, <code>insurance</code>, and <code>ethnicity</code>? Also report the count for each unique value of these variables. (Hint: combine Linux commands <code>zcat</code>, <code>head</code>/<code>tail</code>, <code>awk</code>, <code>uniq -c</code>, <code>wc</code>, and so on.)</li>
 </ol>
 <p><strong>Solution:</strong> Possible values of ‘admission_type’.</p>
-<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $6 }&#39; | sort | uniq</code></pre>
+<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $6 }&#39; | 
+sort | uniq</code></pre>
 <pre><code>## AMBULATORY OBSERVATION
 ## DIRECT EMER.
 ## DIRECT OBSERVATION
@@ -335,7 +338,8 @@ pre code {
 ## SURGICAL SAME DAY ADMISSION
 ## URGENT</code></pre>
 <p><strong>Solution:</strong> Possible values of ‘admission_location’.</p>
-<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $7 }&#39; | sort | uniq</code></pre>
+<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $7 }&#39; | 
+sort | uniq</code></pre>
 <pre><code>## 
 ## AMBULATORY SURGERY TRANSFER
 ## CLINIC REFERRAL
@@ -349,12 +353,14 @@ pre code {
 ## TRANSFER FROM SKILLED NURSING FACILITY
 ## WALK-IN/SELF REFERRAL</code></pre>
 <p><strong>Solution:</strong> Possible values of ‘insurance’.</p>
-<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $9 }&#39; | sort | uniq</code></pre>
+<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $9 }&#39; | 
+sort | uniq</code></pre>
 <pre><code>## Medicaid
 ## Medicare
 ## Other</code></pre>
 <p><strong>Solution:</strong> Possible values of ‘ethnicity’.</p>
-<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $12 }&#39; | sort | uniq</code></pre>
+<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $12 }&#39; | 
+sort | uniq</code></pre>
 <pre><code>## AMERICAN INDIAN/ALASKA NATIVE
 ## ASIAN
 ## BLACK/AFRICAN AMERICAN
@@ -364,7 +370,8 @@ pre code {
 ## UNKNOWN
 ## WHITE</code></pre>
 <p><strong>Solution:</strong> Counts for values of ‘admission_type’.</p>
-<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $6 }&#39; | sort | uniq -c</code></pre>
+<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $6 }&#39; | 
+sort | uniq -c</code></pre>
 <pre><code>##    7254 AMBULATORY OBSERVATION
 ##   21581 DIRECT EMER.
 ##   19991 DIRECT OBSERVATION
@@ -375,7 +382,8 @@ pre code {
 ##   41074 SURGICAL SAME DAY ADMISSION
 ##   47930 URGENT</code></pre>
 <p><strong>Solution:</strong> Counts for values of ‘admission_location’.</p>
-<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $7 }&#39; | sort | uniq -c</code></pre>
+<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $7 }&#39; | 
+sort | uniq -c</code></pre>
 <pre><code>##   60435 
 ##     191 AMBULATORY SURGERY TRANSFER
 ##   10670 CLINIC REFERRAL
@@ -389,12 +397,14 @@ pre code {
 ##    4063 TRANSFER FROM SKILLED NURSING FACILITY
 ##   16660 WALK-IN/SELF REFERRAL</code></pre>
 <p><strong>Solution:</strong> Counts for values of ‘insurance’.</p>
-<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $9 }&#39; | sort | uniq -c</code></pre>
+<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $9 }&#39; | 
+sort | uniq -c</code></pre>
 <pre><code>##   50850 Medicaid
 ##  171360 Medicare
 ##  301530 Other</code></pre>
 <p><strong>Solution:</strong> Counts for values of ‘ethnicity’.</p>
-<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $12 }&#39; | sort | uniq -c</code></pre>
+<pre class="bash"><code>zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, &#39;(NR&gt;1)&#39;&#39;{ print $12 }&#39; |
+sort | uniq -c</code></pre>
 <pre><code>##    1535 AMERICAN INDIAN/ALASKA NATIVE
 ##   24506 ASIAN
 ##   80293 BLACK/AFRICAN AMERICAN
@@ -447,8 +457,14 @@ done
 head -n &quot;$2&quot; &quot;$1&quot; | tail -n &quot;$3&quot;</code></pre>
 <p>Using <code>chmod</code> make the file executable by the owner, and run</p>
 <pre class="bash"><code>./middle.sh pg42671.txt 20 5</code></pre>
+<pre><code>## 
+## Author: Jane Austen
+## 
+## Editor: R. W. (Robert William) Chapman
+## </code></pre>
 <p>Explain the output. Explain the meaning of <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and <code>&quot;$3&quot;</code> in this shell script. Why do we need the first line of the shell script?</p></li>
 </ol>
+<p><strong>Solution:</strong> <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and <code>&quot;$3&quot;</code> ensure that the entire argument is captured since not having quotes could result in the loss of white space. The first line of the script makes this script compatible with whatever system shell is running the script.</p>
 <div id="q5.-more-fun-with-linux" class="section level3">
 <h3>Q5. More fun with Linux</h3>
 <p>Try following commands in Bash and interpret the results: <code>cal</code>, <code>cal 2021</code>, <code>cal 9 1752</code> (anything unusual?), <code>date</code>, <code>hostname</code>, <code>arch</code>, <code>uname -a</code>, <code>uptime</code>, <code>who am i</code>, <code>who</code>, <code>w</code>, <code>id</code>, <code>last | head</code>, <code>echo {con,pre}{sent,fer}{s,ed}</code>, <code>time sleep 5</code>, <code>history | tail</code>.</p>

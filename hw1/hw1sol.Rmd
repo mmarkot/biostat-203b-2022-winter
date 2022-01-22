@@ -111,55 +111,65 @@ zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | head -10
 ```
 **Solution:** Number of Rows.
 ```{bash}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $6 }' | wc -l
+zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $6 }' | 
+wc -l
 ```
 
 **Solution:** Number of Unique patients.
 ```{bash}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $1 }' | sort | uniq | wc -l
+zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $1 }' | 
+sort | uniq | wc -l
 ```
 
 6. What are the possible values taken by each of the variable `admission_type`, `admission_location`, `insurance`, and `ethnicity`? Also report the count for each unique value of these variables. (Hint: combine Linux commands `zcat`, `head`/`tail`, `awk`, `uniq -c`, `wc`, and so on.)
 
 **Solution:** Possible values of 'admission_type'.
 ```{bash}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $6 }' | sort | uniq
+zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $6 }' | 
+sort | uniq
 ```
 
 **Solution:** Possible values of 'admission_location'.
 ```{bash}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $7 }' | sort | uniq
+zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $7 }' | 
+sort | uniq
 ```
 
 
 **Solution:** Possible values of 'insurance'.
 ```{bash}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $9 }' | sort | uniq
+zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $9 }' | 
+sort | uniq
 ```
 
 **Solution:** Possible values of 'ethnicity'.
 ```{bash}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $12 }' | sort | uniq
+zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $12 }' | 
+sort | uniq
 ```
 
 **Solution:** Counts for values of 'admission_type'.
 ```{bash}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $6 }' | sort | uniq -c
+zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $6 }' | 
+sort | uniq -c
 ```
 
 **Solution:** Counts for values of 'admission_location'.
 ```{bash}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $7 }' | sort | uniq -c
+zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $7 }' | 
+sort | uniq -c
 ```
 
 **Solution:** Counts for values of 'insurance'.
 ```{bash}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $9 }' | sort | uniq -c
+zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $9 }' | 
+sort | uniq -c
 ```
 
 **Solution:** Counts for values of 'ethnicity'.
 ```{bash}
-zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $12 }' | sort | uniq -c
+zcat /mnt/mimiciv/1.0/core/admissions.csv.gz | awk -F, '(NR>1)''{ print $12 }' |
+sort | uniq -c
 ```
 
 ## Q4. Who's popular in Price and Prejudice
@@ -192,7 +202,10 @@ times, even if the commnd is run again.
     echo 'hello, world' >> test2.txt
     ```
     
-**Solution:** The '>' overwrites an existing file with the newest output given. For example if 'test1.txt' already existed it would have been changed into 'hello, world'. However, the '>>' operator appends to an existing file so 'test2.txt' would add 'hello, world' to whatever was already in 'test2.txt'.
+**Solution:** The '>' overwrites an existing file with the newest output given. 
+For example if 'test1.txt' already existed it would have been changed into 
+'hello, world'. However, the '>>' operator appends to an existing file so 
+'test2.txt' would add 'hello, world' to whatever was already in 'test2.txt'.
     
     
 
@@ -204,10 +217,14 @@ times, even if the commnd is run again.
     head -n "$2" "$1" | tail -n "$3"
     ```
 Using `chmod` make the file executable by the owner, and run 
-    ```{bash eval=FALSE}
+    ```{bash eval=TRUE}
     ./middle.sh pg42671.txt 20 5
     ```
 Explain the output. Explain the meaning of `"$1"`, `"$2"`, and `"$3"` in this shell script. Why do we need the first line of the shell script?
+
+**Solution:** `"$1"`, `"$2"`, and `"$3"` ensure that the entire argument is captured since not having quotes could result in the loss of white space. The first line of the script makes this script compatible with whatever system shell is running the script.
+
+
 
 ### Q5. More fun with Linux
 
