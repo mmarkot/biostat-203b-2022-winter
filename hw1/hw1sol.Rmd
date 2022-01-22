@@ -191,6 +191,10 @@ times, even if the commnd is run again.
     ```{bash eval=FALSE}
     echo 'hello, world' >> test2.txt
     ```
+    
+**Solution:** The '>' overwrites an existing file with the newest output given. For example if 'test1.txt' already existed it would have been changed into 'hello, world'. However, the '>>' operator appends to an existing file so 'test2.txt' would add 'hello, world' to whatever was already in 'test2.txt'.
+    
+    
 
 3. Using your favorite text editor (e.g., `vi`), type the following and save the file as `middle.sh`:
     ```{bash eval=FALSE}
