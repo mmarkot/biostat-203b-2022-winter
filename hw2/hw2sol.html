@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Your Name" />
+<meta name="author" content="Michael Markot" />
 
 
 <title>Biostat 203B Homework 2</title>
@@ -166,7 +166,7 @@ pre code {
 
 <h1 class="title toc-ignore">Biostat 203B Homework 2</h1>
 <h3 class="subtitle">Due Feb 6 @ 11:59PM</h3>
-<h4 class="author">Your Name</h4>
+<h4 class="author">Michael Markot</h4>
 
 </div>
 
@@ -209,16 +209,29 @@ pre code {
 ##  [9] bslib_0.3.1     rmarkdown_2.11  tools_3.6.0     stringr_1.4.0  
 ## [13] xfun_0.29       yaml_2.2.1      fastmap_1.1.0   compiler_3.6.0 
 ## [17] htmltools_0.5.2 knitr_1.37      sass_0.4.0</code></pre>
+<pre><code>```bash
+ls -l /mnt/mimiciv/1.0/core
+```
+
+```
+## total 71472
+## -rw-r--r--. 1 root root 17208966 Jan  4 21:48 admissions.csv.gz
+## -rw-r--r--. 1 root root      606 Jan  4 21:48 index.html
+## -rw-r--r--. 1 root root  2955582 Jan  4 21:48 patients.csv.gz
+## -rw-r--r--. 1 root root 53014503 Jan  4 21:48 transfers.csv.gz
+```</code></pre>
 <pre class="r"><code>knitr::opts_chunk$set(echo = TRUE, cache = TRUE, cache.lazy = FALSE)
 library(tidyverse)
 library(data.table)
 library(lubridate)</code></pre>
-<pre class="r"><code>os &lt;- sessionInfo()$running
-if (str_detect(os, &quot;Linux&quot;)) {
-  mimic_path &lt;- &quot;/mnt/mimiciv/1.0&quot;
-} else if (str_detect(os, &quot;macOS&quot;)) {
-  mimic_path &lt;- &quot;/Users/huazhou/Documents/Box Sync/MIMIC/mimic-iv-1.0&quot;
-}</code></pre>
+<pre class="r"><code>#os &lt;- sessionInfo()$running
+#if (str_detect(os, &quot;Linux&quot;)) {
+#  mimic_path &lt;- &quot;/mnt/mimiciv/1.0&quot;
+#} else if (str_detect(os, &quot;macOS&quot;)) {
+#  mimic_path &lt;- &quot;/Users/huazhou/Documents/Box Sync/MIMIC/mimic-iv-1.0&quot;
+#}
+
+mimic_path &lt;- &quot;/mnt/mimiciv/1.0&quot;</code></pre>
 <p>In this exercise, we use tidyverse (ggpot2, dplyr, etc) to explore the <a href="https://mimic.mit.edu/docs/iv/">MIMIC-IV</a> data introduced in <a href="https://ucla-biostat-203b.github.io/2022winter/hw/hw1/hw1.html">homework 1</a> and to build a cohort of ICU stays.</p>
 <pre class="r"><code># tree -s -L 2 /Users/huazhou/Documents/Box\ Sync/MIMIC/mimic-iv-1.0
 system(str_c(&quot;tree -s -L 2 &quot;, shQuote(mimic_path)), intern = TRUE)</code></pre>
@@ -266,7 +279,11 @@ system(str_c(&quot;tree -s -L 2 &quot;, shQuote(mimic_path)), intern = TRUE)</co
 <div id="q1.-read.csv-base-r-vs-read_csv-tidyverse-vs-fread-data.table" class="section level2">
 <h2>Q1. <code>read.csv</code> (base R) vs <code>read_csv</code> (tidyverse) vs <code>fread</code> (data.table)</h2>
 <p>There are quite a few utilities in R for reading plain text data files. Let us test the speed of reading a moderate sized compressed csv file, <code>admissions.csv.gz</code>, by three programs: <code>read.csv</code> in base R, <code>read_csv</code> in tidyverse, and <code>fread</code> in the popular data.table package.</p>
+<pre class="r"><code>system.time(read.csv(&quot;/mnt/mimiciv/1.0/core/admissions.csv.gz&quot;))
+system.time(read_csv(&quot;/mnt/mimiciv/1.0/core/admissions.csv.gz&quot;))
+system.time(fread(&quot;/mnt/mimiciv/1.0/core/admissions.csv.gz&quot;))</code></pre>
 <p>Which function is fastest? Is there difference in the (default) parsed data types? (Hint: R function <code>system.time</code> measures run times.)</p>
+<p><strong>Solution:</strong> The ‘fread’ function is fastest, followed clsoely by ‘read_csv’. ‘read.csv’ was the slowest by more than a factor of ten. ‘read_csv’ classifies the time variables as date time data types whereas ‘read.csv’ classifies these by default as numeric.</p>
 <p>For later questions, we stick to the tidyverse.</p>
 </div>
 <div id="q2.-icu-stays" class="section level2">
