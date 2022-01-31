@@ -13,10 +13,6 @@ Display machine information for reproducibility:
 sessionInfo()
 ```
 
-    ```{bash}
-    ls -l /mnt/mimiciv/1.0/core
-    ```
-
 ```{r setup, message=F}
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE, cache.lazy = FALSE)
 library(tidyverse)
@@ -25,12 +21,12 @@ library(lubridate)
 ```
 
 ```{r}
-#os <- sessionInfo()$running
-#if (str_detect(os, "Linux")) {
-#  mimic_path <- "/mnt/mimiciv/1.0"
-#} else if (str_detect(os, "macOS")) {
-#  mimic_path <- "/Users/huazhou/Documents/Box Sync/MIMIC/mimic-iv-1.0"
-#}
+os <- sessionInfo()$running
+if (str_detect(os, "Linux")) {
+  mimic_path <- "/mnt/mimiciv/1.0"
+} else if (str_detect(os, "macOS")) {
+  mimic_path <- "/Users/huazhou/Documents/Box Sync/MIMIC/mimic-iv-1.0"
+}
 
 mimic_path <- "/mnt/mimiciv/1.0"
 ```
@@ -77,9 +73,25 @@ system(
 
 1. Import `icustatys.csv.gz` as a tibble `icustays_tble`. 
 
-2. How many unique `subject_id`? Can a `subject_id` have multiple ICU stays? 
+```{r}
+icustays_tble <- read_csv("/mnt/mimiciv/1.0/icu/icustays.csv.gz")
+```
+
+2. How many unique `subject_id`? Can a `subject_id` have multiple ICU stays?
+
+```{r}
+length(unique(icustays_tble$subject_id))
+```
+**Solution** There are 53,150 unique subject ID's. There are more total 
+observations than unique subject ID's so a subject ID must be able to have 
+multiple stays.
 
 3. For each `subject_id`, let's only keep the first ICU stay in the tibble `icustays_tble`.
+
+```{r}
+icustays_tble <- icustays_tble %>% 
+                   distinct(subject_id, .keep_all = TRUE)
+```
 
 ## Q3. `admission` data
 

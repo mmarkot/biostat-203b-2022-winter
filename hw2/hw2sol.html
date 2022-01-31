@@ -209,27 +209,16 @@ pre code {
 ##  [9] bslib_0.3.1     rmarkdown_2.11  tools_3.6.0     stringr_1.4.0  
 ## [13] xfun_0.29       yaml_2.2.1      fastmap_1.1.0   compiler_3.6.0 
 ## [17] htmltools_0.5.2 knitr_1.37      sass_0.4.0</code></pre>
-<pre><code>```bash
-ls -l /mnt/mimiciv/1.0/core
-```
-
-```
-## total 71472
-## -rw-r--r--. 1 root root 17208966 Jan  4 21:48 admissions.csv.gz
-## -rw-r--r--. 1 root root      606 Jan  4 21:48 index.html
-## -rw-r--r--. 1 root root  2955582 Jan  4 21:48 patients.csv.gz
-## -rw-r--r--. 1 root root 53014503 Jan  4 21:48 transfers.csv.gz
-```</code></pre>
 <pre class="r"><code>knitr::opts_chunk$set(echo = TRUE, cache = TRUE, cache.lazy = FALSE)
 library(tidyverse)
 library(data.table)
 library(lubridate)</code></pre>
-<pre class="r"><code>#os &lt;- sessionInfo()$running
-#if (str_detect(os, &quot;Linux&quot;)) {
-#  mimic_path &lt;- &quot;/mnt/mimiciv/1.0&quot;
-#} else if (str_detect(os, &quot;macOS&quot;)) {
-#  mimic_path &lt;- &quot;/Users/huazhou/Documents/Box Sync/MIMIC/mimic-iv-1.0&quot;
-#}
+<pre class="r"><code>os &lt;- sessionInfo()$running
+if (str_detect(os, &quot;Linux&quot;)) {
+  mimic_path &lt;- &quot;/mnt/mimiciv/1.0&quot;
+} else if (str_detect(os, &quot;macOS&quot;)) {
+  mimic_path &lt;- &quot;/Users/huazhou/Documents/Box Sync/MIMIC/mimic-iv-1.0&quot;
+}
 
 mimic_path &lt;- &quot;/mnt/mimiciv/1.0&quot;</code></pre>
 <p>In this exercise, we use tidyverse (ggpot2, dplyr, etc) to explore the <a href="https://mimic.mit.edu/docs/iv/">MIMIC-IV</a> data introduced in <a href="https://ucla-biostat-203b.github.io/2022winter/hw/hw1/hw1.html">homework 1</a> and to build a cohort of ICU stays.</p>
@@ -308,10 +297,29 @@ system.time(fread(&quot;/mnt/mimiciv/1.0/core/admissions.csv.gz&quot;))</code></
 ##  [9] &quot;15914763,28906020,36909804,Trauma SICU (TSICU),Trauma SICU (TSICU),2176-12-14 12:00:00,2176-12-17 11:47:01,2.9909837962962964&quot; 
 ## [10] &quot;16256226,20013290,39289362,Neuro Stepdown,Neuro Stepdown,2150-12-20 16:09:08,2150-12-21 14:58:40,0.9510648148148149&quot;</code></pre>
 <ol style="list-style-type: decimal">
-<li><p>Import <code>icustatys.csv.gz</code> as a tibble <code>icustays_tble</code>.</p></li>
-<li><p>How many unique <code>subject_id</code>? Can a <code>subject_id</code> have multiple ICU stays?</p></li>
-<li><p>For each <code>subject_id</code>, let’s only keep the first ICU stay in the tibble <code>icustays_tble</code>.</p></li>
+<li>Import <code>icustatys.csv.gz</code> as a tibble <code>icustays_tble</code>.</li>
 </ol>
+<pre class="r"><code>icustays_tble &lt;- read_csv(&quot;/mnt/mimiciv/1.0/icu/icustays.csv.gz&quot;)</code></pre>
+<pre><code>## Rows: 76540 Columns: 8</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (2): first_careunit, last_careunit
+## dbl  (4): subject_id, hadm_id, stay_id, los
+## dttm (2): intime, outtime</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>How many unique <code>subject_id</code>? Can a <code>subject_id</code> have multiple ICU stays?</li>
+</ol>
+<pre class="r"><code>length(unique(icustays_tble$subject_id))</code></pre>
+<pre><code>## [1] 53150</code></pre>
+<p><strong>Solution</strong> There are 53,150 unique subject ID’s. There are more total observations than unique subject ID’s so a subject ID must be able to have multiple stays.</p>
+<ol start="3" style="list-style-type: decimal">
+<li>For each <code>subject_id</code>, let’s only keep the first ICU stay in the tibble <code>icustays_tble</code>.</li>
+</ol>
+<pre class="r"><code>icustays_tble &lt;- icustays_tble %&gt;% 
+                   distinct(subject_id, .keep_all = TRUE)</code></pre>
 </div>
 <div id="q3.-admission-data" class="section level2">
 <h2>Q3. <code>admission</code> data</h2>
