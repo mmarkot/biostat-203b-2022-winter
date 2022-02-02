@@ -82,7 +82,7 @@ icustays_tble <- read_csv("/mnt/mimiciv/1.0/icu/icustays.csv.gz")
 ```{r}
 length(unique(icustays_tble$subject_id))
 ```
-**Solution** There are 53,150 unique subject ID's. There are more total 
+**Solution:** There are 53,150 unique subject ID's. There are more total 
 observations than unique subject ID's so a subject ID must be able to have 
 multiple stays.
 
@@ -161,7 +161,7 @@ admissions_tble$admit_hour <- hour(admissions_tble$admittime)
 ggplot(data = admissions_tble) +
   geom_bar(mapping = aes(admit_hour))
 ```
-**Solution** There is a large spike in admissions at 7am compared to the hours 
+**Solution:** There is a large spike in admissions at 7am compared to the hours 
 preceding and following it. This could be when most people wake up and decide 
 they need to go to the hospital, when there is a staffing increase at the 
 hospital for the beginning of the work day, or another unknown factor.
@@ -182,7 +182,28 @@ system(
 
 1. Import `patients.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/core/patients/>) as a tibble `patients_tble` and only keep the patients who have a match in `icustays_tble` (according to `subject_id`).
 
+```{r}
+patients_tble <- read_csv("/mnt/mimiciv/1.0/core/patients.csv.gz")
+```
+
+```{r}
+patients_tble <-patients_tble %>% 
+  semi_join(icustays_tble, by = "subject_id")
+```
+
 2. Summarize variables `gender` and `anchor_age`, and explain any patterns you see.
+
+```{r}
+patients_tble$gender <- as.factor(patients_tble$gender)
+summary.factor(patients_tble$gender)
+summary(patients_tble$anchor_age)
+```
+
+**Solution:** There are 56% males comapred to females and the age seems to be 
+consist of many more older people than younger people with the mean and median 
+being over 60. This makes sense since older people are more likly to need the 
+hospital than younger peolpe in general. Also the minimum age is 18 so we can 
+assume that children were excluded from this data.
 
 ## Q5. Lab results
 
