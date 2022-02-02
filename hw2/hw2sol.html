@@ -433,7 +433,7 @@ ggplot(data = admissions_tble) +
 <pre><code>## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>patients_tble &lt;-patients_tble %&gt;% 
+<pre class="r"><code>patients_tble &lt;- patients_tble %&gt;% 
   semi_join(icustays_tble, by = &quot;subject_id&quot;)</code></pre>
 <ol start="2" style="list-style-type: decimal">
 <li>Summarize variables <code>gender</code> and <code>anchor_age</code>, and explain any patterns you see.</li>
@@ -491,14 +491,35 @@ summary.factor(patients_tble$gender)</code></pre>
 <li>Find how many rows are in <code>labevents.csv.gz</code>.</li>
 </ol>
 <pre class="bash"><code>wc -l &quot;/mnt/mimiciv/1.0/hosp/labevents.csv.gz&quot;</code></pre>
-<pre><code>## 8398755 /mnt/mimiciv/1.0/hosp/labevents.csv.gz</code></pre>
 <p><strong>Solution:</strong> There are 8,398,755 rows in ‘labevents.csv.gz’.</p>
 <ol start="2" style="list-style-type: decimal">
 <li><p>We are interested in the lab measurements of creatinine (50912), potassium (50971), sodium (50983), chloride (50902), bicarbonate (50882), hematocrit (51221), white blood cell count (51301), glucose (50931), magnesium (50960), and calcium (50893). Retrieve a subset of <code>labevents.csv.gz</code> only containing these items for the patients in <code>icustays_tble</code> as a tibble <code>labevents_tble</code>.</p>
 <p>Hint: <code>labevents.csv.gz</code> is a data file too big to be read in by the <code>read_csv</code> function in its default setting. Utilize the <code>col_select</code> and <code>lazy</code> options in the <code>read_csv</code> function to reduce the memory burden.</p></li>
-<li><p>Further restrict <code>labevents_tble</code> to the first lab measurement during the ICU stay.</p></li>
-<li><p>Summarize the lab measurements by appropriate numerics and graphics.</p></li>
 </ol>
+<pre class="r"><code>labevents_tble &lt;- read_csv(&quot;/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz&quot;)</code></pre>
+<pre><code>## Rows: 30198826 Columns: 4</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## dbl  (3): subject_id, itemid, valuenum
+## dttm (1): charttime</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>labevents_tble &lt;- labevents_tble %&gt;% 
+  semi_join(icustays_tble, by = &quot;subject_id&quot;)</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>Further restrict <code>labevents_tble</code> to the first lab measurement during the ICU stay.</li>
+</ol>
+<pre class="r"><code>labevents_tble &lt;- labevents_tble %&gt;% 
+  pivot_wider(names_from = itemid, values_from = valuenum)</code></pre>
+<pre class="r"><code>labevents_tble &lt;- labevents_tble %&gt;% 
+                     distinct(subject_id, .keep_all = TRUE)</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>Summarize the lab measurements by appropriate numerics and graphics.</li>
+</ol>
+<pre class="r"><code>names(labevents_tble) &lt;- c(&#39;subject_id&#39;, &#39;charttime&#39;, &#39;bicarbonate&#39;, &#39;chloride&#39;, &#39;creatinine&#39;, &#39;glucose&#39;, 
+                       &#39;potassium&#39;, &#39;sodium&#39;, &#39;hematocrit&#39;, &#39;white_blood_cell_count&#39;, &#39;calcium&#39;,
+                       &#39;magnesium&#39;)</code></pre>
 </div>
 <div id="q6.-vitals-from-charted-events" class="section level2">
 <h2>Q6. Vitals from charted events</h2>

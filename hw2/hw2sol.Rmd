@@ -187,7 +187,7 @@ patients_tble <- read_csv("/mnt/mimiciv/1.0/core/patients.csv.gz")
 ```
 
 ```{r}
-patients_tble <-patients_tble %>% 
+patients_tble <- patients_tble %>% 
   semi_join(icustays_tble, by = "subject_id")
 ```
 
@@ -232,7 +232,7 @@ system(
 
 1. Find how many rows are in `labevents.csv.gz`.
 
-```{bash eval = T}
+```{bash eval = F}
 wc -l "/mnt/mimiciv/1.0/hosp/labevents.csv.gz"
 ```
 **Solution:** There are 8,398,755 rows in 'labevents.csv.gz'.
@@ -242,8 +242,40 @@ wc -l "/mnt/mimiciv/1.0/hosp/labevents.csv.gz"
 
     Hint: `labevents.csv.gz` is a data file too big to be read in by the `read_csv` function in its default setting. Utilize the `col_select` and `lazy` options in the `read_csv` function to reduce the memory burden.
 
+```{r}
+labevents_tble <- read_csv("/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz")
+```
+
+```{r}
+labevents_tble <- labevents_tble %>% 
+  semi_join(icustays_tble, by = "subject_id")
+```
+
 3. Further restrict `labevents_tble` to the first lab measurement during the ICU stay. 
+
+```{r warning = FALSE}
+labevents_tble <- labevents_tble %>% 
+  pivot_wider(names_from = itemid, values_from = valuenum)
+```
+
+
+```{r}
+labevents_tble <- labevents_tble %>% 
+                     distinct(subject_id, .keep_all = TRUE)
+```
+
 4. Summarize the lab measurements by appropriate numerics and graphics. 
+
+```{r}
+names(labevents_tble) <- c('subject_id', 'charttime', 'bicarbonate', 'chloride', 'creatinine', 'glucose', 
+                       'potassium', 'sodium', 'hematocrit', 'white_blood_cell_count', 'calcium',
+                       'magnesium')
+```
+
+```{r}
+
+```
+
 
 ## Q6. Vitals from charted events
 
