@@ -253,29 +253,64 @@ labevents_tble <- labevents_tble %>%
 
 3. Further restrict `labevents_tble` to the first lab measurement during the ICU stay. 
 
-```{r warning = FALSE}
-labevents_tble <- labevents_tble %>% 
-  pivot_wider(names_from = itemid, values_from = valuenum)
-```
-
 
 ```{r}
 labevents_tble <- labevents_tble %>% 
                      distinct(subject_id, .keep_all = TRUE)
 ```
 
+```{r}
+labevents_tble <- labevents_tble %>% 
+  pivot_wider(names_from = itemid, 
+              values_from = valuenum)
+```
+
 4. Summarize the lab measurements by appropriate numerics and graphics. 
 
 ```{r}
-names(labevents_tble) <- c('subject_id', 'charttime', 'bicarbonate', 'chloride', 'creatinine', 'glucose', 
-                       'potassium', 'sodium', 'hematocrit', 'white_blood_cell_count', 'calcium',
-                       'magnesium')
+names(labevents_tble) <- c('subject_id', 'charttime', 'bicarbonate', 
+                       'chloride', 'creatinine', 'glucose', 'potassium', 
+                       'sodium', 'hematocrit', 'white_blood_cell_count', 
+                       'calcium','magnesium')
+```
+
+```{r}
+lab_means <- labevents_tble %>%
+  summarise_at(c("bicarbonate", "chloride", "creatinine", "glucose", 
+                 "potassium", "sodium", "hematocrit", "white_blood_cell_count",
+                 "calcium", "magnesium"), 
+                 mean, na.rm = TRUE) 
+lab_medians <- labevents_tble %>%
+  summarise_at(c("bicarbonate", "chloride", "creatinine", "glucose", 
+                 "potassium", "sodium", "hematocrit", "white_blood_cell_count",
+                 "calcium", "magnesium"), 
+                 median, na.rm = TRUE)
+lab_sd <- labevents_tble %>%
+  summarise_at(c("bicarbonate", "chloride", "creatinine", "glucose", 
+                 "potassium", "sodium", "hematocrit", "white_blood_cell_count",
+                 "calcium", "magnesium"), 
+                 sd, na.rm = TRUE)
+lab_min <- labevents_tble %>%
+  summarise_at(c("bicarbonate", "chloride", "creatinine", "glucose", 
+                 "potassium", "sodium", "hematocrit", "white_blood_cell_count",
+                 "calcium", "magnesium"), 
+                 min, na.rm = TRUE)
+lab_max <- labevents_tble %>%
+  summarise_at(c("bicarbonate", "chloride", "creatinine", "glucose", 
+                 "potassium", "sodium", "hematocrit", "white_blood_cell_count",
+                 "calcium", "magnesium"), 
+                 max, na.rm = TRUE)
+
+lab_measures <- rbind(lab_means, lab_medians, lab_sd, lab_min, lab_max)
+lab_measures$statistic <- c("Mean", "Median", "sd", "Min", "Max")
+lab_measures <- lab_measures %>% select(statistic, everything())
+print.data.frame(lab_measures)
+
 ```
 
 ```{r}
 
 ```
-
 
 ## Q6. Vitals from charted events
 

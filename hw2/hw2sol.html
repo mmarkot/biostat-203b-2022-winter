@@ -511,15 +511,59 @@ summary.factor(patients_tble$gender)</code></pre>
 <li>Further restrict <code>labevents_tble</code> to the first lab measurement during the ICU stay.</li>
 </ol>
 <pre class="r"><code>labevents_tble &lt;- labevents_tble %&gt;% 
-  pivot_wider(names_from = itemid, values_from = valuenum)</code></pre>
-<pre class="r"><code>labevents_tble &lt;- labevents_tble %&gt;% 
                      distinct(subject_id, .keep_all = TRUE)</code></pre>
+<pre class="r"><code>labevents_tble &lt;- labevents_tble %&gt;% 
+  pivot_wider(names_from = itemid, 
+              values_from = valuenum)</code></pre>
 <ol start="4" style="list-style-type: decimal">
 <li>Summarize the lab measurements by appropriate numerics and graphics.</li>
 </ol>
-<pre class="r"><code>names(labevents_tble) &lt;- c(&#39;subject_id&#39;, &#39;charttime&#39;, &#39;bicarbonate&#39;, &#39;chloride&#39;, &#39;creatinine&#39;, &#39;glucose&#39;, 
-                       &#39;potassium&#39;, &#39;sodium&#39;, &#39;hematocrit&#39;, &#39;white_blood_cell_count&#39;, &#39;calcium&#39;,
-                       &#39;magnesium&#39;)</code></pre>
+<pre class="r"><code>names(labevents_tble) &lt;- c(&#39;subject_id&#39;, &#39;charttime&#39;, &#39;bicarbonate&#39;, 
+                       &#39;chloride&#39;, &#39;creatinine&#39;, &#39;glucose&#39;, &#39;potassium&#39;, 
+                       &#39;sodium&#39;, &#39;hematocrit&#39;, &#39;white_blood_cell_count&#39;, 
+                       &#39;calcium&#39;,&#39;magnesium&#39;)</code></pre>
+<pre class="r"><code>lab_means &lt;- labevents_tble %&gt;%
+  summarise_at(c(&quot;bicarbonate&quot;, &quot;chloride&quot;, &quot;creatinine&quot;, &quot;glucose&quot;, 
+                 &quot;potassium&quot;, &quot;sodium&quot;, &quot;hematocrit&quot;, &quot;white_blood_cell_count&quot;,
+                 &quot;calcium&quot;, &quot;magnesium&quot;), 
+                 mean, na.rm = TRUE) 
+lab_medians &lt;- labevents_tble %&gt;%
+  summarise_at(c(&quot;bicarbonate&quot;, &quot;chloride&quot;, &quot;creatinine&quot;, &quot;glucose&quot;, 
+                 &quot;potassium&quot;, &quot;sodium&quot;, &quot;hematocrit&quot;, &quot;white_blood_cell_count&quot;,
+                 &quot;calcium&quot;, &quot;magnesium&quot;), 
+                 median, na.rm = TRUE)
+lab_sd &lt;- labevents_tble %&gt;%
+  summarise_at(c(&quot;bicarbonate&quot;, &quot;chloride&quot;, &quot;creatinine&quot;, &quot;glucose&quot;, 
+                 &quot;potassium&quot;, &quot;sodium&quot;, &quot;hematocrit&quot;, &quot;white_blood_cell_count&quot;,
+                 &quot;calcium&quot;, &quot;magnesium&quot;), 
+                 sd, na.rm = TRUE)
+lab_min &lt;- labevents_tble %&gt;%
+  summarise_at(c(&quot;bicarbonate&quot;, &quot;chloride&quot;, &quot;creatinine&quot;, &quot;glucose&quot;, 
+                 &quot;potassium&quot;, &quot;sodium&quot;, &quot;hematocrit&quot;, &quot;white_blood_cell_count&quot;,
+                 &quot;calcium&quot;, &quot;magnesium&quot;), 
+                 min, na.rm = TRUE)
+lab_max &lt;- labevents_tble %&gt;%
+  summarise_at(c(&quot;bicarbonate&quot;, &quot;chloride&quot;, &quot;creatinine&quot;, &quot;glucose&quot;, 
+                 &quot;potassium&quot;, &quot;sodium&quot;, &quot;hematocrit&quot;, &quot;white_blood_cell_count&quot;,
+                 &quot;calcium&quot;, &quot;magnesium&quot;), 
+                 max, na.rm = TRUE)
+
+lab_measures &lt;- rbind(lab_means, lab_medians, lab_sd, lab_min, lab_max)
+lab_measures$statistic &lt;- c(&quot;Mean&quot;, &quot;Median&quot;, &quot;sd&quot;, &quot;Min&quot;, &quot;Max&quot;)
+lab_measures &lt;- lab_measures %&gt;% select(statistic, everything())
+print.data.frame(lab_measures)</code></pre>
+<pre><code>##   statistic bicarbonate  chloride creatinine  glucose  potassium     sodium
+## 1      Mean   25.040239  8.824818  37.977635 116.1071  1.1061286 101.826520
+## 2    Median   25.000000  9.100000  38.300000  97.0000  1.0000000 102.000000
+## 3        sd    3.918713  1.063414   5.696898  56.6986  0.7983269   5.259704
+## 4       Min   15.000000  6.000000  15.300000  53.0000  0.1000000  80.000000
+## 5       Max   40.000000 12.200000  61.000000 449.0000 14.7000000 120.000000
+##   hematocrit white_blood_cell_count  calcium magnesium
+## 1 139.278114              10.088550 4.089520 1.9984375
+## 2 139.000000               8.800000 4.000000 1.9000000
+## 3   3.010079               5.311813 0.459571 0.2633678
+## 4 126.000000               2.300000 3.100000 1.6000000
+## 5 149.000000              31.100000 5.900000 3.0000000</code></pre>
 </div>
 <div id="q6.-vitals-from-charted-events" class="section level2">
 <h2>Q6. Vitals from charted events</h2>
