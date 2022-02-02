@@ -109,15 +109,62 @@ system(
 
 1. Import `admissions.csv.gz` as a tibble `admissions_tble`.
 
+```{r}
+admissions_tble <- read_csv("/mnt/mimiciv/1.0/core/admissions.csv.gz")
+```
+
 2. Let's only keep the admissions that have a match in `icustays_tble` according to `subject_id` and `hadmi_id`.
+
+```{r}
+admissions_tble <- admissions_tble %>% 
+  semi_join(icustays_tble, by = "subject_id", "hadm_id")
+```
 
 3. Summarize the following variables by graphics. 
 
 - admission year  
+
+```{r}
+admissions_tble$admit_year <- year(admissions_tble$admittime)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(admit_year))
+```
+
 - admission month  
+
+```{r}
+admissions_tble$admit_month <- month(admissions_tble$admittime, label = TRUE)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(admit_month))
+```
+
 - admission month day  
+
+```{r}
+admissions_tble$admit_mday <- mday(admissions_tble$admittime)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(admit_mday))
+```
+
 - admission week day  
+
+```{r}
+admissions_tble$admit_wday <- wday(admissions_tble$admittime, label = TRUE)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(admit_wday))
+```
+
 - admission hour (anything unusual?)  
+
+```{r}
+admissions_tble$admit_hour <- hour(admissions_tble$admittime)
+ggplot(data = admissions_tble) +
+  geom_bar(mapping = aes(admit_hour))
+```
+**Solution** There is a large spike in admissions at 7am compared to the hours 
+preceding and following it. This could be when most people wake up and decide 
+they need to go to the hospital, when there is a staffing increase at the 
+hospital for the beginning of the work day, or another unknown factor.
 
 ## Q4. `patients` data
 
