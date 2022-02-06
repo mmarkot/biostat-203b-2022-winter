@@ -255,18 +255,19 @@ labevents_tble <- labevents_tble %>%
 
 3. Further restrict `labevents_tble` to the first lab measurement during the ICU stay. 
 
-
-
 ```{r}
-labevents_tble <- labevents_tble1 %>% 
+labevents_tble <- labevents_tble %>% 
                      group_by(subject_id) %>% 
                      arrange(charttime) %>% 
                      distinct(subject_id, .keep_all = TRUE)
 ```
 
 ```{r}
-
+labevents_tble <- labevents_tble %>% 
+  pivot_wider(names_from = itemid, 
+              values_from = valuenum)
 ```
+
 
 4. Summarize the lab measurements by appropriate numerics and graphics. 
 
@@ -278,41 +279,101 @@ names(labevents_tble) <- c('subject_id', 'charttime', 'bicarbonate',
 ```
 
 ```{r}
+labevents_tble$subject_id <- as.character(labevents_tble$subject_id)
+options(scipen = 999)
+
+#lab_means <- colMeans(labevents_tble[sapply(labevents_tble, is.numeric)], na.rm=TRUE)
+
 lab_means <- labevents_tble %>%
   summarise_at(c("bicarbonate", "chloride", "creatinine", "glucose", 
                  "potassium", "sodium", "hematocrit", "white_blood_cell_count",
                  "calcium", "magnesium"), 
-                 mean, na.rm = TRUE) 
+                 mean, na.rm = TRUE)
+
 lab_medians <- labevents_tble %>%
   summarise_at(c("bicarbonate", "chloride", "creatinine", "glucose", 
                  "potassium", "sodium", "hematocrit", "white_blood_cell_count",
                  "calcium", "magnesium"), 
                  median, na.rm = TRUE)
+
 lab_sd <- labevents_tble %>%
   summarise_at(c("bicarbonate", "chloride", "creatinine", "glucose", 
                  "potassium", "sodium", "hematocrit", "white_blood_cell_count",
                  "calcium", "magnesium"), 
                  sd, na.rm = TRUE)
+
 lab_min <- labevents_tble %>%
   summarise_at(c("bicarbonate", "chloride", "creatinine", "glucose", 
                  "potassium", "sodium", "hematocrit", "white_blood_cell_count",
                  "calcium", "magnesium"), 
                  min, na.rm = TRUE)
+
 lab_max <- labevents_tble %>%
   summarise_at(c("bicarbonate", "chloride", "creatinine", "glucose", 
                  "potassium", "sodium", "hematocrit", "white_blood_cell_count",
                  "calcium", "magnesium"), 
                  max, na.rm = TRUE)
 
-lab_measures <- rbind(lab_means, lab_medians, lab_sd, lab_min, lab_max)
-lab_measures$statistic <- c("Mean", "Median", "sd", "Min", "Max")
+
+
+lab_measures <- rbind(lab_means, lab_medians, lab_sd)
+lab_measures$statistic <- c("Mean", "Median", "sd")
 lab_measures <- lab_measures %>% select(statistic, everything())
 print.data.frame(lab_measures)
 
 ```
 
 ```{r}
+mbicarbonate <- mean(labevents_tble$bicarbonate, na.rm = TRUE)
+ggplot(data = labevents_tble) +
+  geom_density(mapping = aes(bicarbonate), fill = "light blue") +
+  geom_vline(xintercept = mbicarbonate, size = 1, color = "red")
 
+mchloride <- mean(labevents_tble$chloride, na.rm = TRUE)
+ggplot(data = labevents_tble) +
+  geom_density(mapping = aes(chloride), fill = "light blue") +
+  geom_vline(xintercept = mchloride, size = 1, color = "red")
+
+mcreatinine <- mean(labevents_tble$creatinine, na.rm = TRUE)
+ggplot(data = labevents_tble) +
+  geom_density(mapping = aes(creatinine), fill = "light blue") +
+  geom_vline(xintercept = mcreatinine, size = 1, color = "red")
+
+mglucose <- mean(labevents_tble$glucose, na.rm = TRUE)
+ggplot(data = labevents_tble) +
+  geom_density(mapping = aes(glucose), fill = "light blue") +
+  geom_vline(xintercept = mglucose, size = 1, color = "red")
+
+mpotassium <- mean(labevents_tble$potassium, na.rm = TRUE)
+ggplot(data = labevents_tble) +
+  geom_density(mapping = aes(potassium), fill = "light blue") +
+  geom_vline(xintercept = mpotassium, size = 1, color = "red")
+
+msodium <- mean(labevents_tble$sodium, na.rm = TRUE)
+ggplot(data = labevents_tble) +
+  geom_density(mapping = aes(sodium), fill = "light blue") +
+  geom_vline(xintercept = msodium, size = 1, color = "red")
+
+mhematocrit <- mean(labevents_tble$hematocrit, na.rm = TRUE)
+ggplot(data = labevents_tble) +
+  geom_density(mapping = aes(hematocrit), fill = "light blue") +
+  geom_vline(xintercept = mhematocrit, size = 1, color = "red")
+
+mwhite_blood_cell_count <- mean(labevents_tble$white_blood_cell_count, 
+                                na.rm = TRUE)
+ggplot(data = labevents_tble) +
+  geom_density(mapping = aes(white_blood_cell_count), fill = "light blue") +
+  geom_vline(xintercept = mwhite_blood_cell_count, size = 1, color = "red")
+
+mcalcium <- mean(labevents_tble$calcium, na.rm = TRUE)
+ggplot(data = labevents_tble) +
+  geom_density(mapping = aes(calcium), fill = "light blue") +
+  geom_vline(xintercept = mcalcium, size = 1, color = "red")
+
+mmagnesium <- mean(labevents_tble$magnesium, na.rm = TRUE)
+ggplot(data = labevents_tble) +
+  geom_density(mapping = aes(magnesium), fill = "light blue") +
+  geom_vline(xintercept = mmagnesium, size = 1, color = "red")
 ```
 
 ## Q6. Vitals from charted events
