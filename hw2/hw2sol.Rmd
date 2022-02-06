@@ -90,6 +90,8 @@ multiple stays.
 
 ```{r}
 icustays_tble <- icustays_tble %>% 
+                   group_by(subject_id) %>% 
+                   arrange(intime) %>% 
                    distinct(subject_id, .keep_all = TRUE)
 ```
 
@@ -254,15 +256,16 @@ labevents_tble <- labevents_tble %>%
 3. Further restrict `labevents_tble` to the first lab measurement during the ICU stay. 
 
 
+
 ```{r}
-labevents_tble <- labevents_tble %>% 
+labevents_tble <- labevents_tble1 %>% 
+                     group_by(subject_id) %>% 
+                     arrange(charttime) %>% 
                      distinct(subject_id, .keep_all = TRUE)
 ```
 
 ```{r}
-labevents_tble <- labevents_tble %>% 
-  pivot_wider(names_from = itemid, 
-              values_from = valuenum)
+
 ```
 
 4. Summarize the lab measurements by appropriate numerics and graphics. 
