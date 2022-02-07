@@ -261,7 +261,7 @@ labevents_tble <- labevents_tble %>%
 
 3. Further restrict `labevents_tble` to the first lab measurement during the ICU stay. 
 
-```{r warning = False}
+```{r warning = FALSE}
 labevents_tble <- labevents_tble %>% 
   group_by(subject_id, charttime) %>% 
   pivot_wider(id_cols = c(subject_id, charttime), 
@@ -351,7 +351,7 @@ labevents_tble <- labevents_tble %>%
 summary(labevents_tble[3:12])
 ```
 
-```{r warning = False}
+```{r warning = FALSE}
 mbicarbonate <- mean(labevents_tble$bicarbonate, na.rm = TRUE)
 ggplot(data = labevents_tble) +
   geom_density(mapping = aes(bicarbonate), fill = "light blue") +
@@ -439,7 +439,7 @@ chartevents_tble <- chartevents_tble %>%
   semi_join(icustays_tble, by = "subject_id")
 ```
 
-```{r warning = False}
+```{r warning = FALSE}
 chartevents_tble <- chartevents_tble %>% 
   group_by(subject_id, charttime) %>% 
   pivot_wider(id_cols = c(subject_id, charttime), 
