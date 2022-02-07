@@ -316,8 +316,8 @@ lab_max <- labevents_tble %>%
 
 
 
-lab_measures <- rbind(lab_means, lab_medians, lab_sd)
-lab_measures$statistic <- c("Mean", "Median", "sd")
+lab_measures <- rbind(lab_means, lab_medians, lab_sd, lab_min, lab_max)
+lab_measures$statistic <- c("Mean", "Median", "sd", "min", "max")
 lab_measures <- lab_measures %>% select(statistic, everything())
 print.data.frame(lab_measures)
 
@@ -401,9 +401,90 @@ system(
 
 1. We are interested in the vitals for ICU patients: heart rate (220045), mean non-invasive blood pressure (220181), systolic non-invasive blood pressure (220179), body temperature in Fahrenheit (223761), and respiratory rate (220210). Retrieve a subset of `chartevents.csv.gz` only containing these items for the patients in `icustays_tble` as a tibble `chartevents_tble`.
 
+```{r}
+chartevents_tble <- read_csv("/mnt/mimiciv/1.0/icu/chartevents_filtered_itemid.csv.gz")
+```
+
+```{r}
+chartevents_tble <- chartevents_tble %>% 
+  semi_join(icustays_tble, by = "subject_id")
+```
+
+```{r}
+chartevents_tble <- chartevents_tble %>% 
+  group_by(subject_id, charttime) %>% 
+  pivot_wider(id_cols = c(subject_id, charttime), 
+    names_from = itemid, values_from = valuenum)
+```
+
+
+
 2. Further restrict `chartevents_tble` to the first vital measurement during the ICU stay. 
 
+```{r}
+chartevents_tble <- chartevents_tble %>% 
+                     group_by(subject_id) %>% 
+                     arrange(charttime) %>% 
+                     distinct(subject_id, .keep_all = TRUE)
+```
+
+```{r}
+chartevents_tble <- chartevents_tble %>% 
+  mutate(`220179` = ifelse(`220179` == "NULL", NA, unlist(`220179`)) %>% 
+           as.numeric)
+
+chartevents_tble <- chartevents_tble %>% 
+  mutate(`220181` = ifelse(`220181` == "NULL", NA, unlist(`220181`)) %>% 
+           as.numeric)
+
+chartevents_tble <- chartevents_tble %>% 
+  mutate(`220045` = ifelse(`220045` == "NULL", NA, unlist(`220045`)) %>% 
+           as.numeric)
+
+chartevents_tble <- chartevents_tble %>% 
+  mutate(`220210` = ifelse(`220210` == "NULL", NA, unlist(`220210`)) %>% 
+           as.numeric)
+
+chartevents_tble <- chartevents_tble %>% 
+  mutate(`223761` = ifelse(`223761` == "NULL", NA, unlist(`223761`)) %>% 
+               as.numeric)
+```
+
 3. Summarize these vital measurements by appropriate numerics and graphics. 
+
+```{r}
+names(chartevents_tble) <- c('subject_id', 'charttime', 'systolic_non-invasive_blood_pressure', 
+                       'mean_non-invasive_blood_pressure', 'heart_rate', 'respiratory_rate', 'body_temperature_in_Fahrenheit')
+```
+
+```{r}
+chart_means <- chartevents_tble %>%
+  summarise_at(c("systolic_non-invasive_blood_pressure", "mean_non-invasive_blood_pressure", "heart_rate", "heart_rate", 
+                 "respiratory_rate", "body_temperature_in_Fahrenheit"), 
+                 mean, na.rm = TRUE) 
+lab_medians <- labevents_tble %>%
+  summarise_at(c("systolic_non-invasive_blood_pressure", "mean_non-invasive_blood_pressure", "heart_rate", "heart_rate", 
+                 "respiratory_rate", "body_temperature_in_Fahrenheit"), 
+                 mean, na.rm = TRUE) 
+lab_sd <- labevents_tble %>%
+  summarise_at(c("systolic_non-invasive_blood_pressure", "mean_non-invasive_blood_pressure", "heart_rate", "heart_rate", 
+                 "respiratory_rate", "body_temperature_in_Fahrenheit"), 
+                 mean, na.rm = TRUE) 
+lab_min <- labevents_tble %>%
+  summarise_at(c("systolic_non-invasive_blood_pressure", "mean_non-invasive_blood_pressure", "heart_rate", "heart_rate", 
+                 "respiratory_rate", "body_temperature_in_Fahrenheit"), 
+                 mean, na.rm = TRUE) 
+lab_max <- labevents_tble %>%
+  summarise_at(c("systolic_non-invasive_blood_pressure", "mean_non-invasive_blood_pressure", "heart_rate", "heart_rate", 
+                 "respiratory_rate", "body_temperature_in_Fahrenheit"), 
+                 mean, na.rm = TRUE) 
+
+lab_measures <- rbind(lab_means, lab_medians, lab_sd, lab_min, lab_max)
+lab_measures$statistic <- c("Mean", "Median", "sd", "Min", "Max")
+lab_measures <- lab_measures %>% select(statistic, everything())
+print.data.frame(lab_measures)
+
+```
 
 ## Q7. Putting things together
 
