@@ -271,7 +271,7 @@ system(str_c(&quot;tree -s -L 2 &quot;, shQuote(mimic_path)), intern = TRUE)</co
 <p>There are quite a few utilities in R for reading plain text data files. Let us test the speed of reading a moderate sized compressed csv file, <code>admissions.csv.gz</code>, by three programs: <code>read.csv</code> in base R, <code>read_csv</code> in tidyverse, and <code>fread</code> in the popular data.table package.</p>
 <pre class="r"><code>system.time(read.csv(&quot;/mnt/mimiciv/1.0/core/admissions.csv.gz&quot;))</code></pre>
 <pre><code>##    user  system elapsed 
-##  42.945   0.211  43.169</code></pre>
+##  46.029   0.207  47.536</code></pre>
 <pre class="r"><code>system.time(read_csv(&quot;/mnt/mimiciv/1.0/core/admissions.csv.gz&quot;))</code></pre>
 <pre><code>## Rows: 523740 Columns: 15
 ## ── Column specification ────────────────────────────────────────────────────────
@@ -283,10 +283,10 @@ system(str_c(&quot;tree -s -L 2 &quot;, shQuote(mimic_path)), intern = TRUE)</co
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <pre><code>##    user  system elapsed 
-##   3.406   0.263   2.167</code></pre>
+##   3.628   0.254   2.471</code></pre>
 <pre class="r"><code>system.time(fread(&quot;/mnt/mimiciv/1.0/core/admissions.csv.gz&quot;))</code></pre>
 <pre><code>##    user  system elapsed 
-##   1.572   0.097   0.925</code></pre>
+##   1.861   0.117   1.071</code></pre>
 <p>Which function is fastest? Is there difference in the (default) parsed data types? (Hint: R function <code>system.time</code> measures run times.)</p>
 <p><strong>Solution:</strong> The ‘fread’ function is fastest, followed clsoely by ‘read_csv’. ‘read.csv’ was the slowest by more than a factor of ten. ‘read_csv’ classifies the time variables as date time data types whereas ‘read.csv’ classifies these by default as numeric.</p>
 <p>For later questions, we stick to the tidyverse.</p>
@@ -316,13 +316,13 @@ system(str_c(&quot;tree -s -L 2 &quot;, shQuote(mimic_path)), intern = TRUE)</co
 <li>Import <code>icustatys.csv.gz</code> as a tibble <code>icustays_tble</code>.</li>
 </ol>
 <pre class="r"><code>icustays_tble &lt;- read_csv(&quot;/mnt/mimiciv/1.0/icu/icustays.csv.gz&quot;)</code></pre>
-<pre><code>## Rows: 76540 Columns: 8</code></pre>
-<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+<pre><code>## Rows: 76540 Columns: 8
+## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr  (2): first_careunit, last_careunit
 ## dbl  (4): subject_id, hadm_id, stay_id, los
-## dttm (2): intime, outtime</code></pre>
-<pre><code>## 
+## dttm (2): intime, outtime
+## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <ol start="2" style="list-style-type: decimal">
@@ -364,13 +364,13 @@ system(str_c(&quot;tree -s -L 2 &quot;, shQuote(mimic_path)), intern = TRUE)</co
 <li>Import <code>admissions.csv.gz</code> as a tibble <code>admissions_tble</code>.</li>
 </ol>
 <pre class="r"><code>admissions_tble &lt;- read_csv(&quot;/mnt/mimiciv/1.0/core/admissions.csv.gz&quot;)</code></pre>
-<pre><code>## Rows: 523740 Columns: 15</code></pre>
-<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+<pre><code>## Rows: 523740 Columns: 15
+## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr  (7): admission_type, admission_location, discharge_location, insurance,...
 ## dbl  (3): subject_id, hadm_id, hospital_expire_flag
-## dttm (5): admittime, dischtime, deathtime, edregtime, edouttime</code></pre>
-<pre><code>## 
+## dttm (5): admittime, dischtime, deathtime, edregtime, edouttime
+## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <ol start="2" style="list-style-type: decimal">
@@ -443,13 +443,13 @@ ggplot(data = admissions_tble) +
 <li>Import <code>patients.csv.gz</code> (<a href="https://mimic.mit.edu/docs/iv/modules/core/patients/" class="uri">https://mimic.mit.edu/docs/iv/modules/core/patients/</a>) as a tibble <code>patients_tble</code> and only keep the patients who have a match in <code>icustays_tble</code> (according to <code>subject_id</code>).</li>
 </ol>
 <pre class="r"><code>patients_tble &lt;- read_csv(&quot;/mnt/mimiciv/1.0/core/patients.csv.gz&quot;)</code></pre>
-<pre><code>## Rows: 382278 Columns: 6</code></pre>
-<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+<pre><code>## Rows: 382278 Columns: 6
+## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## chr  (2): gender, anchor_year_group
 ## dbl  (3): subject_id, anchor_age, anchor_year
-## date (1): dod</code></pre>
-<pre><code>## 
+## date (1): dod
+## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <pre class="r"><code>patients_tble &lt;- patients_tble %&gt;% 

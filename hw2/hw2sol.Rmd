@@ -489,7 +489,6 @@ names(chartevents_tble) <- c('subject_id', 'charttime',
 ```
 
 ```{r}
-
 chartevents_tble <- chartevents_tble %>% 
   mutate(systolic_non_invasive_blood_pressure = 
            ifelse(systolic_non_invasive_blood_pressure > 300, NA, 
