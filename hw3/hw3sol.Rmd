@@ -85,18 +85,52 @@ icustays_tble <- icustays_tble %>%
 ```{r}
 # # TODO
 # admissions_tble <- 
+admissions_tble <- tbl(con, "admissions") %>%
+  show_query() %>%
+  print(width = Inf)
+```
+
+```{r}
+admissions_tble <- admissions_tble %>% 
+  semi_join(icustays_tble, by = "subject_id", "hadm_id") %>% 
+  show_query() %>%
+  print(width = Inf)
 ```
 
 5. Connect to the `patients` table and only keep the patients who have a match in `icustays_tble` (according to `subject_id`).
 ```{r}
 # # TODO
 # patients_tble <-
+patients_tble <- tbl(con, "patients") %>%
+  show_query() %>%
+  print(width = Inf)
+```
+
+```{r}
+patients_tble <- patients_tble %>% 
+  semi_join(icustays_tble, by = "subject_id") %>% 
+  show_query() %>%
+  print(width = Inf)
 ```
 
 6. Connect to the `labevents` table and retrieve a subset that only contain subjects who appear in `icustays_tble` and the lab items listed in HW2. 
 ```{r}
 # # TODO
 # labevents_tble <- 
+labevents_tble <- tbl(con, "labevents") %>%
+  show_query() %>%
+  print(width = Inf)
+```
+
+```{r}
+labevents_tble <- labevents_tble %>% 
+  filter(itemid == 50912 | itemid == 50971 | itemid == 50983 | 
+           itemid == 50902 | itemid == 50882 | itemid == 51221 | 
+           itemid == 51301 | itemid == 50931 | itemid == 50931 | 
+           itemid == 50960 | itemid == 50893) %>% 
+  semi_join(icustays_tble, by = "subject_id") %>% 
+  show_query() %>%
+  print(width = Inf)
 ```
 Only keep the first lab measurements during ICU stay and pivot lab items to become variables/columns.
 ```{r}

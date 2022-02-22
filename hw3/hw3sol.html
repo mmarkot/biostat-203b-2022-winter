@@ -337,17 +337,302 @@ icustays_tble &lt;- tbl(con, &quot;icustays&quot;) %&gt;%
 <li>Connect to the <code>admissions</code> table and only keep the patients who have a match in <code>icustays_tble</code> (according to <code>subject_id</code> and <code>hadm_id</code>).</li>
 </ol>
 <pre class="r"><code># # TODO
-# admissions_tble &lt;- </code></pre>
+# admissions_tble &lt;- 
+admissions_tble &lt;- tbl(con, &quot;admissions&quot;) %&gt;%
+  show_query() %&gt;%
+  print(width = Inf)</code></pre>
+<pre><code>## &lt;SQL&gt;
+## SELECT *
+## FROM `admissions`
+## # Source:   table&lt;admissions&gt; [?? x 15]
+## # Database: BigQueryConnection
+##    subject_id  hadm_id admittime           dischtime          
+##         &lt;int&gt;    &lt;int&gt; &lt;dttm&gt;              &lt;dttm&gt;             
+##  1   19940860 24902106 2130-12-31 09:19:00 2131-01-22 13:33:00
+##  2   17615674 27014468 2142-11-29 21:16:00 2143-01-13 12:28:00
+##  3   11786836 29132076 2117-05-04 19:28:00 2117-08-17 17:28:00
+##  4   19858751 23670116 2164-08-24 03:26:00 2164-09-05 12:10:00
+##  5   18186739 29454835 2121-07-28 15:25:00 2121-08-23 16:26:00
+##  6   17727602 24085356 2139-09-25 16:08:00 2139-09-30 12:00:00
+##  7   18863892 26824106 2181-10-21 01:06:00 2181-10-24 12:30:00
+##  8   19931040 27261054 2138-11-28 15:22:00 2138-12-11 13:45:00
+##  9   10831754 23383102 2122-04-29 13:11:00 2122-05-11 19:18:00
+## 10   16050270 23791681 2161-07-01 21:13:00 2161-07-05 15:45:00
+##    deathtime admission_type admission_location discharge_location
+##    &lt;dttm&gt;    &lt;chr&gt;          &lt;chr&gt;              &lt;chr&gt;             
+##  1 NA        URGENT         &lt;NA&gt;               HOME HEALTH CARE  
+##  2 NA        URGENT         &lt;NA&gt;               HOME              
+##  3 NA        URGENT         &lt;NA&gt;               HOME HEALTH CARE  
+##  4 NA        URGENT         &lt;NA&gt;               HOME HEALTH CARE  
+##  5 NA        URGENT         &lt;NA&gt;               HOME              
+##  6 NA        URGENT         &lt;NA&gt;               HOME              
+##  7 NA        URGENT         &lt;NA&gt;               HOME              
+##  8 NA        URGENT         &lt;NA&gt;               ACUTE HOSPITAL    
+##  9 NA        URGENT         &lt;NA&gt;               HOME              
+## 10 NA        URGENT         PROCEDURE SITE     HOME              
+##    insurance language marital_status ethnicity              edregtime
+##    &lt;chr&gt;     &lt;chr&gt;    &lt;chr&gt;          &lt;chr&gt;                  &lt;dttm&gt;   
+##  1 Other     ENGLISH  &lt;NA&gt;           WHITE                  NA       
+##  2 Medicaid  ENGLISH  &lt;NA&gt;           BLACK/AFRICAN AMERICAN NA       
+##  3 Other     ENGLISH  &lt;NA&gt;           BLACK/AFRICAN AMERICAN NA       
+##  4 Other     ENGLISH  &lt;NA&gt;           UNKNOWN                NA       
+##  5 Other     ENGLISH  &lt;NA&gt;           OTHER                  NA       
+##  6 Other     ENGLISH  &lt;NA&gt;           WHITE                  NA       
+##  7 Other     ENGLISH  &lt;NA&gt;           ASIAN                  NA       
+##  8 Other     ?        &lt;NA&gt;           OTHER                  NA       
+##  9 Other     ENGLISH  &lt;NA&gt;           UNKNOWN                NA       
+## 10 Other     ENGLISH  &lt;NA&gt;           UNKNOWN                NA       
+##    edouttime hospital_expire_flag
+##    &lt;dttm&gt;                   &lt;int&gt;
+##  1 NA                           0
+##  2 NA                           0
+##  3 NA                           0
+##  4 NA                           0
+##  5 NA                           0
+##  6 NA                           0
+##  7 NA                           0
+##  8 NA                           0
+##  9 NA                           0
+## 10 NA                           0
+## # … with more rows</code></pre>
+<pre class="r"><code>admissions_tble &lt;- admissions_tble %&gt;% 
+  semi_join(icustays_tble, by = &quot;subject_id&quot;, &quot;hadm_id&quot;) %&gt;% 
+  show_query() %&gt;%
+  print(width = Inf)</code></pre>
+<pre><code>## &lt;SQL&gt;
+## SELECT * FROM `admissions` AS `LHS`
+## WHERE EXISTS (
+##   SELECT 1 FROM (SELECT `LHS`.`subject_id` AS `subject_id`, `LHS`.`intime` AS `intime`, `hadm_id`, `stay_id`, `first_careunit`, `last_careunit`, `outtime`, `los`
+## FROM (SELECT `subject_id`, MIN(`intime`) AS `intime`
+## FROM (SELECT `subject_id`, `intime`
+## FROM `icustays`) `q01`
+## GROUP BY `subject_id`) `LHS`
+## LEFT JOIN `icustays` AS `RHS`
+## ON (`LHS`.`subject_id` = `RHS`.`subject_id` AND `LHS`.`intime` = `RHS`.`intime`)
+## ) `RHS`
+##   WHERE (`LHS`.`subject_id` = `RHS`.`subject_id`)
+## )
+## # Source:   lazy query [?? x 15]
+## # Database: BigQueryConnection
+##    subject_id  hadm_id admittime           dischtime          
+##         &lt;int&gt;    &lt;int&gt; &lt;dttm&gt;              &lt;dttm&gt;             
+##  1   11340246 29722576 2146-11-13 22:01:00 2146-11-20 15:00:00
+##  2   10734403 26588273 2110-06-20 14:45:00 2110-06-24 18:15:00
+##  3   12341414 23270661 2126-11-12 19:45:00 2126-12-08 18:00:00
+##  4   11517868 20943825 2110-08-31 19:44:00 2110-09-04 17:20:00
+##  5   16427415 23450547 2152-11-02 14:00:00 2152-11-09 17:45:00
+##  6   16596287 21217256 2150-09-12 12:50:00 2150-09-26 16:00:00
+##  7   13197526 28853425 2111-03-01 02:22:00 2111-03-03 17:30:00
+##  8   18329324 24947486 2139-06-13 20:01:00 2139-06-14 17:45:00
+##  9   14755447 21231460 2172-04-02 14:27:00 2172-04-07 15:45:00
+## 10   10171525 21263495 2115-12-03 21:07:00 2115-12-13 17:30:00
+##    deathtime           admission_type admission_location                
+##    &lt;dttm&gt;              &lt;chr&gt;          &lt;chr&gt;                             
+##  1 NA                  URGENT         TRANSFER FROM HOSPITAL            
+##  2 2110-06-24 18:15:00 URGENT         TRANSFER FROM HOSPITAL            
+##  3 NA                  URGENT         TRANSFER FROM HOSPITAL            
+##  4 NA                  URGENT         TRANSFER FROM HOSPITAL            
+##  5 NA                  URGENT         TRANSFER FROM HOSPITAL            
+##  6 NA                  URGENT         INTERNAL TRANSFER TO OR FROM PSYCH
+##  7 NA                  URGENT         TRANSFER FROM HOSPITAL            
+##  8 2139-06-14 17:45:00 URGENT         TRANSFER FROM HOSPITAL            
+##  9 NA                  URGENT         TRANSFER FROM HOSPITAL            
+## 10 NA                  URGENT         TRANSFER FROM HOSPITAL            
+##    discharge_location       insurance language marital_status ethnicity       
+##    &lt;chr&gt;                    &lt;chr&gt;     &lt;chr&gt;    &lt;chr&gt;          &lt;chr&gt;           
+##  1 HOME                     Medicare  ENGLISH  &lt;NA&gt;           HISPANIC/LATINO 
+##  2 &lt;NA&gt;                     Other     ENGLISH  &lt;NA&gt;           UNABLE TO OBTAIN
+##  3 REHAB                    Other     ?        &lt;NA&gt;           UNKNOWN         
+##  4 HOME                     Medicare  ENGLISH  &lt;NA&gt;           UNKNOWN         
+##  5 REHAB                    Medicare  ENGLISH  &lt;NA&gt;           WHITE           
+##  6 HOME                     Other     ENGLISH  &lt;NA&gt;           UNKNOWN         
+##  7 HOME HEALTH CARE         Other     ENGLISH  &lt;NA&gt;           WHITE           
+##  8 DIED                     Other     ENGLISH  &lt;NA&gt;           UNKNOWN         
+##  9 SKILLED NURSING FACILITY Medicare  ?        &lt;NA&gt;           UNKNOWN         
+## 10 PSYCH FACILITY           Medicaid  ENGLISH  &lt;NA&gt;           UNKNOWN         
+##    edregtime           edouttime           hospital_expire_flag
+##    &lt;dttm&gt;              &lt;dttm&gt;                             &lt;int&gt;
+##  1 NA                  NA                                     0
+##  2 NA                  NA                                     1
+##  3 NA                  NA                                     0
+##  4 NA                  NA                                     0
+##  5 NA                  NA                                     0
+##  6 NA                  NA                                     0
+##  7 NA                  NA                                     0
+##  8 NA                  NA                                     1
+##  9 NA                  NA                                     0
+## 10 2115-12-03 20:05:00 2115-12-03 22:54:00                    0
+## # … with more rows</code></pre>
 <ol start="5" style="list-style-type: decimal">
 <li>Connect to the <code>patients</code> table and only keep the patients who have a match in <code>icustays_tble</code> (according to <code>subject_id</code>).</li>
 </ol>
 <pre class="r"><code># # TODO
-# patients_tble &lt;-</code></pre>
+# patients_tble &lt;-
+patients_tble &lt;- tbl(con, &quot;patients&quot;) %&gt;%
+  show_query() %&gt;%
+  print(width = Inf)</code></pre>
+<pre><code>## &lt;SQL&gt;
+## SELECT *
+## FROM `patients`
+## # Source:   table&lt;patients&gt; [?? x 6]
+## # Database: BigQueryConnection
+##    subject_id gender anchor_age anchor_year anchor_year_group dod   
+##         &lt;int&gt; &lt;chr&gt;       &lt;int&gt;       &lt;int&gt; &lt;chr&gt;             &lt;date&gt;
+##  1   10137012 F               0        2110 2008 - 2010       NA    
+##  2   10156260 M               0        2110 2014 - 2016       NA    
+##  3   10158897 M               0        2110 2008 - 2010       NA    
+##  4   10413283 M               0        2110 2014 - 2016       NA    
+##  5   10660064 M               0        2110 2017 - 2019       NA    
+##  6   10736768 F               0        2110 2017 - 2019       NA    
+##  7   10782862 F               0        2110 2008 - 2010       NA    
+##  8   10942655 M               0        2110 2008 - 2010       NA    
+##  9   10999598 M               0        2110 2008 - 2010       NA    
+## 10   11024137 F               0        2110 2008 - 2010       NA    
+## # … with more rows</code></pre>
+<pre class="r"><code>patients_tble &lt;- patients_tble %&gt;% 
+  semi_join(icustays_tble, by = &quot;subject_id&quot;) %&gt;% 
+  show_query() %&gt;%
+  print(width = Inf)</code></pre>
+<pre><code>## &lt;SQL&gt;
+## SELECT * FROM `patients` AS `LHS`
+## WHERE EXISTS (
+##   SELECT 1 FROM (SELECT `LHS`.`subject_id` AS `subject_id`, `LHS`.`intime` AS `intime`, `hadm_id`, `stay_id`, `first_careunit`, `last_careunit`, `outtime`, `los`
+## FROM (SELECT `subject_id`, MIN(`intime`) AS `intime`
+## FROM (SELECT `subject_id`, `intime`
+## FROM `icustays`) `q01`
+## GROUP BY `subject_id`) `LHS`
+## LEFT JOIN `icustays` AS `RHS`
+## ON (`LHS`.`subject_id` = `RHS`.`subject_id` AND `LHS`.`intime` = `RHS`.`intime`)
+## ) `RHS`
+##   WHERE (`LHS`.`subject_id` = `RHS`.`subject_id`)
+## )
+## # Source:   lazy query [?? x 6]
+## # Database: BigQueryConnection
+##    subject_id gender anchor_age anchor_year anchor_year_group dod   
+##         &lt;int&gt; &lt;chr&gt;       &lt;int&gt;       &lt;int&gt; &lt;chr&gt;             &lt;date&gt;
+##  1   19137716 F              18        2111 2008 - 2010       NA    
+##  2   19077387 F              18        2112 2017 - 2019       NA    
+##  3   11155072 M              18        2113 2011 - 2013       NA    
+##  4   17945455 F              18        2113 2014 - 2016       NA    
+##  5   17689255 F              18        2113 2017 - 2019       NA    
+##  6   10894885 F              18        2114 2008 - 2010       NA    
+##  7   15175657 M              18        2114 2014 - 2016       NA    
+##  8   17600374 F              18        2118 2014 - 2016       NA    
+##  9   16501289 M              18        2118 2017 - 2019       NA    
+## 10   10141487 F              18        2119 2017 - 2019       NA    
+## # … with more rows</code></pre>
 <ol start="6" style="list-style-type: decimal">
 <li>Connect to the <code>labevents</code> table and retrieve a subset that only contain subjects who appear in <code>icustays_tble</code> and the lab items listed in HW2.</li>
 </ol>
 <pre class="r"><code># # TODO
-# labevents_tble &lt;- </code></pre>
+# labevents_tble &lt;- 
+labevents_tble &lt;- tbl(con, &quot;labevents&quot;) %&gt;%
+  show_query() %&gt;%
+  print(width = Inf)</code></pre>
+<pre><code>## &lt;SQL&gt;
+## SELECT *
+## FROM `labevents`
+## # Source:   table&lt;labevents&gt; [?? x 15]
+## # Database: BigQueryConnection
+##    labevent_id subject_id  hadm_id specimen_id itemid charttime          
+##          &lt;int&gt;      &lt;int&gt;    &lt;int&gt;       &lt;int&gt;  &lt;int&gt; &lt;dttm&gt;             
+##  1        2692   10000764 27897940     9550105  51248 2132-10-17 05:59:00
+##  2       47208   10003299       NA    69855539  51516 2178-12-10 18:05:00
+##  3       47512   10003299 29323205    34579755  50983 2181-10-23 05:20:00
+##  4       55877   10003700       NA    22046762  51214 2165-04-24 03:40:00
+##  5       57003   10004235 24181354     7200252  50813 2196-02-24 20:54:00
+##  6       57106   10004235 24181354    36231870  50813 2196-02-25 04:50:00
+##  7       57424   10004235 24181354    20870289  50818 2196-02-26 18:10:00
+##  8       58753   10004322 22602599     6039016  50934 2134-10-01 06:19:00
+##  9       73432   10005464       NA    56095848  51491 2165-06-28 07:05:00
+## 10       83043   10006029       NA    27974406  50954 2169-01-22 12:00:00
+##    storetime           value valuenum valueuom ref_range_lower ref_range_upper
+##    &lt;dttm&gt;              &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;              &lt;dbl&gt;           &lt;dbl&gt;
+##  1 2132-10-17 08:09:00 32.3      32.3 pg                  27                32
+##  2 2178-12-10 18:49:00 1          1   #/hpf                0                 5
+##  3 2181-10-23 06:49:00 145      145   mEq/L              133               145
+##  4 2165-04-24 04:18:00 268      268   mg/dL              150               400
+##  5 2196-02-24 20:56:00 3.2        3.2 mmol/L               0.5               2
+##  6 2196-02-25 04:56:00 2.9        2.9 mmol/L               0.5               2
+##  7 2196-02-26 18:13:00 38        38   mm Hg               35                45
+##  8 2134-10-01 08:23:00 18        18   &lt;NA&gt;                NA                NA
+##  9 2165-06-28 07:58:00 6.5        6.5 units                5                 8
+## 10 2169-01-22 14:09:00 226      226   IU/L                94               250
+##    flag     priority comments
+##    &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;   
+##  1 abnormal ROUTINE  &lt;NA&gt;    
+##  2 &lt;NA&gt;     STAT     &lt;NA&gt;    
+##  3 &lt;NA&gt;     ROUTINE  &lt;NA&gt;    
+##  4 &lt;NA&gt;     STAT     &lt;NA&gt;    
+##  5 abnormal &lt;NA&gt;     &lt;NA&gt;    
+##  6 abnormal &lt;NA&gt;     &lt;NA&gt;    
+##  7 &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;    
+##  8 &lt;NA&gt;     ROUTINE  &lt;NA&gt;    
+##  9 &lt;NA&gt;     STAT     &lt;NA&gt;    
+## 10 &lt;NA&gt;     STAT     &lt;NA&gt;    
+## # … with more rows</code></pre>
+<pre class="r"><code>labevents_tble &lt;- labevents_tble %&gt;% 
+  filter(itemid == 50912 | itemid == 50971 | itemid == 50983 | 
+           itemid == 50902 | itemid == 50882 | itemid == 51221 | 
+           itemid == 51301 | itemid == 50931 | itemid == 50931 | 
+           itemid == 50960 | itemid == 50893) %&gt;% 
+  semi_join(icustays_tble, by = &quot;subject_id&quot;) %&gt;% 
+  show_query() %&gt;%
+  print(width = Inf)</code></pre>
+<pre><code>## &lt;SQL&gt;
+## SELECT * FROM (SELECT *
+## FROM `labevents`
+## WHERE (`itemid` = 50912.0 OR `itemid` = 50971.0 OR `itemid` = 50983.0 OR `itemid` = 50902.0 OR `itemid` = 50882.0 OR `itemid` = 51221.0 OR `itemid` = 51301.0 OR `itemid` = 50931.0 OR `itemid` = 50931.0 OR `itemid` = 50960.0 OR `itemid` = 50893.0)) `LHS`
+## WHERE EXISTS (
+##   SELECT 1 FROM (SELECT `LHS`.`subject_id` AS `subject_id`, `LHS`.`intime` AS `intime`, `hadm_id`, `stay_id`, `first_careunit`, `last_careunit`, `outtime`, `los`
+## FROM (SELECT `subject_id`, MIN(`intime`) AS `intime`
+## FROM (SELECT `subject_id`, `intime`
+## FROM `icustays`) `q01`
+## GROUP BY `subject_id`) `LHS`
+## LEFT JOIN `icustays` AS `RHS`
+## ON (`LHS`.`subject_id` = `RHS`.`subject_id` AND `LHS`.`intime` = `RHS`.`intime`)
+## ) `RHS`
+##   WHERE (`LHS`.`subject_id` = `RHS`.`subject_id`)
+## )
+## # Source:   lazy query [?? x 15]
+## # Database: BigQueryConnection
+##    labevent_id subject_id  hadm_id specimen_id itemid charttime          
+##          &lt;int&gt;      &lt;int&gt;    &lt;int&gt;       &lt;int&gt;  &lt;int&gt; &lt;dttm&gt;             
+##  1       72511   10005348 29496232    56146218  50912 2128-09-09 10:50:00
+##  2       95856   10007677 27180483    54512319  50882 2120-11-23 13:39:00
+##  3       96537   10007677 27180483    23515865  50882 2120-12-06 16:00:00
+##  4       96823   10007677 27180483      314261  50882 2120-12-14 08:16:00
+##  5      239514   10019003       NA    73109272  51221 2153-10-06 12:50:00
+##  6      253399   10019992 29448565    67938936  50960 2140-09-17 03:48:00
+##  7      259850   10020852       NA    54454443  50931 2164-10-29 12:30:00
+##  8      291130   10023708       NA    54541981  50912 2145-01-25 09:00:00
+##  9      379384   10031358 27421511    66846653  50912 2156-09-10 08:15:00
+## 10      379695   10031358 28279098    94255287  51221 2157-10-20 07:50:00
+##    storetime           value valuenum valueuom ref_range_lower ref_range_upper
+##    &lt;dttm&gt;              &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;              &lt;dbl&gt;           &lt;dbl&gt;
+##  1 2128-09-09 11:30:00 0.8        0.8 mg/dL                0.5             1.2
+##  2 2120-11-23 14:31:00 23        23   mEq/L               22              32  
+##  3 2120-12-06 17:09:00 24        24   mEq/L               22              32  
+##  4 2120-12-14 10:12:00 28        28   mEq/L               22              32  
+##  5 2153-10-06 13:24:00 33.3      33.3 %                   34              45  
+##  6 2140-09-17 04:57:00 2.1        2.1 mg/dL                1.6             2.6
+##  7 2164-10-29 20:28:00 84        84   mg/dL               70             105  
+##  8 2145-01-25 09:52:00 0.7        0.7 mg/dL                0.4             1.1
+##  9 2156-09-10 09:37:00 1.1        1.1 mg/dL                0.5             1.2
+## 10 2157-10-20 09:37:00 32.9      32.9 %                   40              52  
+##    flag     priority comments
+##    &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;   
+##  1 &lt;NA&gt;     STAT     &lt;NA&gt;    
+##  2 &lt;NA&gt;     STAT     &lt;NA&gt;    
+##  3 &lt;NA&gt;     ROUTINE  &lt;NA&gt;    
+##  4 &lt;NA&gt;     ROUTINE  &lt;NA&gt;    
+##  5 abnormal STAT     &lt;NA&gt;    
+##  6 &lt;NA&gt;     STAT     &lt;NA&gt;    
+##  7 &lt;NA&gt;     ROUTINE  &lt;NA&gt;    
+##  8 &lt;NA&gt;     STAT     &lt;NA&gt;    
+##  9 &lt;NA&gt;     ROUTINE  &lt;NA&gt;    
+## 10 abnormal ROUTINE  &lt;NA&gt;    
+## # … with more rows</code></pre>
 <p>Only keep the first lab measurements during ICU stay and pivot lab items to become variables/columns.</p>
 <pre class="r"><code># # TODO
 # labevents_tble &lt;- labevents_tble %&gt;% ...</code></pre>
