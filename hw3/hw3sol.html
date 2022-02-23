@@ -571,11 +571,11 @@ labevents_tble &lt;- tbl(con, &quot;labevents&quot;) %&gt;%
 ##  9 &lt;NA&gt;     STAT     &lt;NA&gt;    
 ## 10 &lt;NA&gt;     STAT     &lt;NA&gt;    
 ## # … with more rows</code></pre>
-<pre class="r"><code>labevents_tble &lt;- labevents_tble %&gt;% 
-  filter(itemid == 50912 | itemid == 50971 | itemid == 50983 | 
-           itemid == 50902 | itemid == 50882 | itemid == 51221 | 
-           itemid == 51301 | itemid == 50931 | itemid == 50931 | 
-           itemid == 50960 | itemid == 50893) %&gt;% 
+<pre class="r"><code>labevents_tble$itemid &lt;- as.factor(labevents_tble$itemid)
+labevents_tble &lt;- labevents_tble %&gt;% 
+  filter(itemid == 50912 | itemid == 50971 | 
+                           itemid == 50983 | itemid == 50902 | itemid == 50882 | itemid == 51221 | itemid == 51301 | itemid == 50931 | itemid == 50931 | 
+                           itemid == 50960 | itemid == 50893) %&gt;% 
   semi_join(icustays_tble, by = &quot;subject_id&quot;) %&gt;% 
   show_query() %&gt;%
   print(width = Inf)</code></pre>
@@ -635,7 +635,81 @@ labevents_tble &lt;- tbl(con, &quot;labevents&quot;) %&gt;%
 ## # … with more rows</code></pre>
 <p>Only keep the first lab measurements during ICU stay and pivot lab items to become variables/columns.</p>
 <pre class="r"><code># # TODO
-# labevents_tble &lt;- labevents_tble %&gt;% ...</code></pre>
+# labevents_tble &lt;- labevents_tble %&gt;% ...
+labevents_tble &lt;- labevents_tble %&gt;% 
+  group_by(subject_id, itemid) %&gt;% 
+  pivot_wider(names_prefix = &quot;Lab&quot;, names_from = itemid, values_from = valuenum) %&gt;% 
+  show_query() %&gt;%
+  print(width = Inf)</code></pre>
+<pre><code>## &lt;SQL&gt;
+## SELECT `subject_id`, `itemid`, `labevent_id`, `hadm_id`, `specimen_id`, `charttime`, `storetime`, `value`, `valueuom`, `ref_range_lower`, `ref_range_upper`, `flag`, `priority`, `comments`, MAX(IF(`itemid` = 50960, `valuenum`, NULL)) AS `Lab50960`, MAX(IF(`itemid` = 51221, `valuenum`, NULL)) AS `Lab51221`, MAX(IF(`itemid` = 50971, `valuenum`, NULL)) AS `Lab50971`, MAX(IF(`itemid` = 50983, `valuenum`, NULL)) AS `Lab50983`, MAX(IF(`itemid` = 51301, `valuenum`, NULL)) AS `Lab51301`, MAX(IF(`itemid` = 50882, `valuenum`, NULL)) AS `Lab50882`, MAX(IF(`itemid` = 50893, `valuenum`, NULL)) AS `Lab50893`, MAX(IF(`itemid` = 50902, `valuenum`, NULL)) AS `Lab50902`, MAX(IF(`itemid` = 50912, `valuenum`, NULL)) AS `Lab50912`, MAX(IF(`itemid` = 50931, `valuenum`, NULL)) AS `Lab50931`
+## FROM (SELECT * FROM (SELECT *
+## FROM `labevents`
+## WHERE (`itemid` = 50912.0 OR `itemid` = 50971.0 OR `itemid` = 50983.0 OR `itemid` = 50902.0 OR `itemid` = 50882.0 OR `itemid` = 51221.0 OR `itemid` = 51301.0 OR `itemid` = 50931.0 OR `itemid` = 50931.0 OR `itemid` = 50960.0 OR `itemid` = 50893.0)) `LHS`
+## WHERE EXISTS (
+##   SELECT 1 FROM (SELECT `LHS`.`subject_id` AS `subject_id`, `LHS`.`intime` AS `intime`, `hadm_id`, `stay_id`, `first_careunit`, `last_careunit`, `outtime`, `los`
+## FROM (SELECT `subject_id`, MIN(`intime`) AS `intime`
+## FROM (SELECT `subject_id`, `intime`
+## FROM `icustays`) `q01`
+## GROUP BY `subject_id`) `LHS`
+## LEFT JOIN `icustays` AS `RHS`
+## ON (`LHS`.`subject_id` = `RHS`.`subject_id` AND `LHS`.`intime` = `RHS`.`intime`)
+## ) `RHS`
+##   WHERE (`LHS`.`subject_id` = `RHS`.`subject_id`)
+## )) `q01`
+## GROUP BY `subject_id`, `itemid`, `labevent_id`, `hadm_id`, `specimen_id`, `charttime`, `storetime`, `value`, `valueuom`, `ref_range_lower`, `ref_range_upper`, `flag`, `priority`, `comments`
+## # Source:   lazy query [?? x 24]
+## # Database: BigQueryConnection
+## # Groups:   subject_id, itemid
+##    subject_id itemid labevent_id  hadm_id specimen_id charttime          
+##         &lt;int&gt;  &lt;int&gt;       &lt;int&gt;    &lt;int&gt;       &lt;int&gt; &lt;dttm&gt;             
+##  1   12517472  50902    31078912 26149272    94663377 2114-03-24 06:14:00
+##  2   13088319  50912    38112994       NA    78122439 2161-06-21 09:46:00
+##  3   14226637  50882    52367725 26535517    21677804 2174-06-26 05:56:00
+##  4   14350265  50912    53896999       NA    30365602 2134-09-18 05:54:00
+##  5   14112944  51301    50951825 28209751    65440444 2149-09-02 13:04:00
+##  6   14755267  50902    59022198       NA    95662235 2198-07-12 05:50:00
+##  7   14962112  50912    61532625 29637482    82406375 2160-10-18 17:06:00
+##  8   15416363  50882    67250834 27662447    22975505 2134-02-09 03:18:00
+##  9   15796335  50893    72168628 28186962    53721012 2130-02-14 10:27:00
+## 10   15980434  50902    74410966 25079795    80949271 2155-04-09 06:30:00
+##    storetime           value valueuom ref_range_lower ref_range_upper flag    
+##    &lt;dttm&gt;              &lt;chr&gt; &lt;chr&gt;              &lt;dbl&gt;           &lt;dbl&gt; &lt;chr&gt;   
+##  1 2114-03-24 08:10:00 102   mEq/L               96             108   &lt;NA&gt;    
+##  2 2161-06-21 11:22:00 0.7   mg/dL                0.5             1.2 &lt;NA&gt;    
+##  3 2174-06-26 07:42:00 17    mEq/L               22              32   abnormal
+##  4 2134-09-18 06:50:00 1.0   mg/dL                0.5             1.2 &lt;NA&gt;    
+##  5 2149-09-02 13:38:00 17.2  K/uL                 4              10   abnormal
+##  6 2198-07-12 07:09:00 99    mEq/L               96             108   &lt;NA&gt;    
+##  7 2160-10-18 17:52:00 0.8   mg/dL                0.4             1.1 &lt;NA&gt;    
+##  8 2134-02-09 05:35:00 22    mEq/L               22              32   &lt;NA&gt;    
+##  9 2130-02-14 11:55:00 10.0  mg/dL                8.4            10.3 &lt;NA&gt;    
+## 10 2155-04-09 08:11:00 102   mEq/L               96             108   &lt;NA&gt;    
+##    priority comments Lab50960 Lab51221 Lab50971 Lab50983 Lab51301 Lab50882
+##    &lt;chr&gt;    &lt;chr&gt;       &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+##  1 ROUTINE  &lt;NA&gt;           NA       NA       NA       NA     NA         NA
+##  2 ROUTINE  &lt;NA&gt;           NA       NA       NA       NA     NA         NA
+##  3 ROUTINE  &lt;NA&gt;           NA       NA       NA       NA     NA         17
+##  4 STAT     &lt;NA&gt;           NA       NA       NA       NA     NA         NA
+##  5 STAT     &lt;NA&gt;           NA       NA       NA       NA     17.2       NA
+##  6 ROUTINE  &lt;NA&gt;           NA       NA       NA       NA     NA         NA
+##  7 STAT     &lt;NA&gt;           NA       NA       NA       NA     NA         NA
+##  8 STAT     &lt;NA&gt;           NA       NA       NA       NA     NA         22
+##  9 STAT     &lt;NA&gt;           NA       NA       NA       NA     NA         NA
+## 10 ROUTINE  &lt;NA&gt;           NA       NA       NA       NA     NA         NA
+##    Lab50893 Lab50902 Lab50912 Lab50931
+##       &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+##  1       NA      102     NA         NA
+##  2       NA       NA      0.7       NA
+##  3       NA       NA     NA         NA
+##  4       NA       NA      1         NA
+##  5       NA       NA     NA         NA
+##  6       NA       99     NA         NA
+##  7       NA       NA      0.8       NA
+##  8       NA       NA     NA         NA
+##  9       10       NA     NA         NA
+## 10       NA      102     NA         NA
+## # … with more rows</code></pre>
 <ol start="7" style="list-style-type: decimal">
 <li>Connect to <code>chartevents</code> table and retrieve a subset that only contain subjects who appear in <code>icustays_tble</code> and the chart events listed in HW2.</li>
 </ol>

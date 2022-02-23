@@ -123,11 +123,11 @@ labevents_tble <- tbl(con, "labevents") %>%
 ```
 
 ```{r}
+labevents_tble$itemid <- as.factor(labevents_tble$itemid)
 labevents_tble <- labevents_tble %>% 
-  filter(itemid == 50912 | itemid == 50971 | itemid == 50983 | 
-           itemid == 50902 | itemid == 50882 | itemid == 51221 | 
-           itemid == 51301 | itemid == 50931 | itemid == 50931 | 
-           itemid == 50960 | itemid == 50893) %>% 
+  filter(itemid == 50912 | itemid == 50971 | 
+                           itemid == 50983 | itemid == 50902 | itemid == 50882 | itemid == 51221 | itemid == 51301 | itemid == 50931 | itemid == 50931 | 
+                           itemid == 50960 | itemid == 50893) %>% 
   semi_join(icustays_tble, by = "subject_id") %>% 
   show_query() %>%
   print(width = Inf)
@@ -136,6 +136,11 @@ Only keep the first lab measurements during ICU stay and pivot lab items to beco
 ```{r}
 # # TODO
 # labevents_tble <- labevents_tble %>% ...
+labevents_tble <- labevents_tble %>% 
+  group_by(subject_id, itemid) %>% 
+  pivot_wider(names_prefix = "Lab", names_from = itemid, values_from = valuenum) %>% 
+  show_query() %>%
+  print(width = Inf)
 ```
 
 7. Connect to `chartevents` table and retrieve a subset that only contain subjects who appear in `icustays_tble` and the chart events listed in HW2.
