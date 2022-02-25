@@ -123,11 +123,11 @@ labevents_tble <- tbl(con, "labevents") %>%
 ```
 
 ```{r}
-labevents_tble$itemid <- as.factor(labevents_tble$itemid)
 labevents_tble <- labevents_tble %>% 
-  filter(itemid == 50912 | itemid == 50971 | 
-                           itemid == 50983 | itemid == 50902 | itemid == 50882 | itemid == 51221 | itemid == 51301 | itemid == 50931 | itemid == 50931 | 
-                           itemid == 50960 | itemid == 50893) %>% 
+  filter(itemid == 50912 | itemid == 50971 | itemid == 50983 | 
+           itemid == 50902 | itemid == 50882 | itemid == 51221 | 
+           itemid == 51301 | itemid == 50931 | itemid == 50931 | 
+           itemid == 50960 | itemid == 50893) %>% 
   semi_join(icustays_tble, by = "subject_id") %>% 
   show_query() %>%
   print(width = Inf)
@@ -138,7 +138,8 @@ Only keep the first lab measurements during ICU stay and pivot lab items to beco
 # labevents_tble <- labevents_tble %>% ...
 labevents_tble <- labevents_tble %>% 
   group_by(subject_id, itemid) %>% 
-  pivot_wider(names_prefix = "Lab", names_from = itemid, values_from = valuenum) %>% 
+  pivot_wider(names_prefix = "Lab", 
+              names_from = itemid, values_from = valuenum) %>% 
   show_query() %>%
   print(width = Inf)
 ```
@@ -147,11 +148,30 @@ labevents_tble <- labevents_tble %>%
 ```{r}
 # # TODO
 # chartevents_tble <- 
+chartevents_tble <- tbl(con, "chartevents") %>%
+  show_query() %>%
+  print(width = Inf)
 ```
+
+```{r}
+chartevents_tble <- chartevents_tble %>% 
+  filter(itemid == 220045 | itemid == 220181 | itemid == 220179 | 
+           itemid == 223761 | itemid == 220210) %>% 
+  semi_join(icustays_tble, by = "subject_id") %>% 
+  show_query() %>%
+  print(width = Inf)
+```
+
 Only keep the first chart events during ICU stay and pivot chart events to become variables/columns.
 ```{r}
 # # TODO
 # chartevents_tble <- chartevents_tble %>% ...
+chartevents_tble <- chartevents_tble %>% 
+  group_by(subject_id, itemid) %>% 
+  pivot_wider(names_prefix = "Lab", 
+              names_from = itemid, values_from = valuenum) %>% 
+  show_query() %>%
+  print(width = Inf)
 ```
 
 8. Put things together. This step is similar to Q7 of HW2. Using one chain of pipes `%>%` to perform following data wrangling steps: (i) start with the `icustays_tble` for the first ICU stay of each unique patient, (ii) merge in admissions and patients tables, (iii) keep adults only (age at admission >= 18), (iv) merge in the labevents and chartevents tables, (v) create an indicator for 30-day mortality, (vi) save the final tibble to an `icu_cohort.rds` R data file in the `mimiciv_shiny` folder.
