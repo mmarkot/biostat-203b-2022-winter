@@ -576,141 +576,87 @@ labevents_tble &lt;- tbl(con, &quot;labevents&quot;) %&gt;%
            itemid == 50902 | itemid == 50882 | itemid == 51221 | 
            itemid == 51301 | itemid == 50931 | itemid == 50931 | 
            itemid == 50960 | itemid == 50893) %&gt;% 
-  semi_join(icustays_tble, by = &quot;subject_id&quot;) %&gt;% 
-  show_query() %&gt;%
+ left_join(select(icustays_tble, subject_id, intime, outtime), by = c(&quot;subject_id&quot;)) %&gt;% 
+  filter(charttime &gt;= intime &amp; charttime &lt;= outtime) %&gt;% 
+  #group_by(subject_id, itemid) %&gt;% 
+  #arrange(charttime, by.group = TRUE) %&gt;% 
+  #slice_min(charttime, n = 1) %&gt;% 
+  #select(-charttime, -intime, -outtime) %&gt;% 
+ # ungroup() %&gt;% 
+  pivot_wider(names_prefix = &quot;Lab&quot;, names_from = itemid, values_from = valuenum) %&gt;% 
+  group_by(subject_id) %&gt;% 
+  arrange(charttime, by.group = TRUE) %&gt;% 
+  slice_min(charttime, n = 1) %&gt;%
+  ungroup() %&gt;% 
+  arrange(subject_id) %&gt;% 
   print(width = Inf)</code></pre>
-<pre><code>## &lt;SQL&gt;
-## SELECT * FROM (SELECT *
-## FROM `labevents`
-## WHERE (`itemid` = 50912.0 OR `itemid` = 50971.0 OR `itemid` = 50983.0 OR `itemid` = 50902.0 OR `itemid` = 50882.0 OR `itemid` = 51221.0 OR `itemid` = 51301.0 OR `itemid` = 50931.0 OR `itemid` = 50931.0 OR `itemid` = 50960.0 OR `itemid` = 50893.0)) `LHS`
-## WHERE EXISTS (
-##   SELECT 1 FROM (SELECT `LHS`.`subject_id` AS `subject_id`, `LHS`.`intime` AS `intime`, `hadm_id`, `stay_id`, `first_careunit`, `last_careunit`, `outtime`, `los`
-## FROM (SELECT `subject_id`, MIN(`intime`) AS `intime`
-## FROM (SELECT `subject_id`, `intime`
-## FROM `icustays`) `q01`
-## GROUP BY `subject_id`) `LHS`
-## LEFT JOIN `icustays` AS `RHS`
-## ON (`LHS`.`subject_id` = `RHS`.`subject_id` AND `LHS`.`intime` = `RHS`.`intime`)
-## ) `RHS`
-##   WHERE (`LHS`.`subject_id` = `RHS`.`subject_id`)
-## )
-## # Source:   lazy query [?? x 15]
-## # Database: BigQueryConnection
-##    labevent_id subject_id  hadm_id specimen_id itemid charttime          
-##          &lt;int&gt;      &lt;int&gt;    &lt;int&gt;       &lt;int&gt;  &lt;int&gt; &lt;dttm&gt;             
-##  1      238286   10019003 29279905     7711965  51221 2153-04-01 05:28:00
-##  2      263505   10021312 25020332    46878747  50912 2113-08-16 04:58:00
-##  3      416791   10035168       NA    69576386  50893 2145-01-16 09:30:00
-##  4      430653   10035631       NA    19313366  50912 2114-01-06 14:35:00
-##  5      432657   10035631 21476294     4220210  50983 2115-12-01 00:00:00
-##  6      435814   10035631 29276678    40075824  50971 2116-03-08 15:26:00
-##  7      470873   10038933       NA    31600493  50893 2148-09-10 09:44:00
-##  8      471087   10038933 25129047    37444661  51301 2148-09-14 01:25:00
-##  9      675680   10057070 20793141    17050164  51221 2135-10-23 07:20:00
-## 10      868037   10074556 24049696    98334887  51301 2128-10-08 00:00:00
-##    storetime           value valuenum valueuom ref_range_lower ref_range_upper
-##    &lt;dttm&gt;              &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;              &lt;dbl&gt;           &lt;dbl&gt;
-##  1 2153-04-01 07:29:00 25.8      25.8 %                   34              45  
-##  2 2113-08-16 07:06:00 0.6        0.6 mg/dL                0.4             1.1
-##  3 2145-01-16 10:44:00 8.7        8.7 mg/dL                8.4            10.2
-##  4 2114-01-06 15:09:00 1.1        1.1 mg/dL                0.5             1.2
-##  5 2115-12-01 02:00:00 134      134   mEq/L              133             145  
-##  6 2116-03-08 18:13:00 4.3        4.3 mEq/L                3.3             5.1
-##  7 2148-09-10 11:07:00 8.7        8.7 mg/dL                8.4            10.3
-##  8 2148-09-14 01:47:00 12.9      12.9 K/uL                 4              11  
-##  9 2135-10-23 09:11:00 45.2      45.2 %                   40              51  
-## 10 2128-10-08 01:17:00 7.5        7.5 K/uL                 4              10  
-##    flag     priority comments
-##    &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;   
-##  1 abnormal ROUTINE  &lt;NA&gt;    
-##  2 &lt;NA&gt;     STAT     &lt;NA&gt;    
-##  3 &lt;NA&gt;     STAT     &lt;NA&gt;    
-##  4 &lt;NA&gt;     STAT     &lt;NA&gt;    
-##  5 &lt;NA&gt;     STAT     &lt;NA&gt;    
-##  6 &lt;NA&gt;     STAT     &lt;NA&gt;    
-##  7 &lt;NA&gt;     STAT     &lt;NA&gt;    
-##  8 abnormal ROUTINE  &lt;NA&gt;    
-##  9 &lt;NA&gt;     STAT     &lt;NA&gt;    
-## 10 &lt;NA&gt;     STAT     &lt;NA&gt;    
-## # … with more rows</code></pre>
-<p>Only keep the first lab measurements during ICU stay and pivot lab items to become variables/columns.</p>
-<pre class="r"><code># # TODO
-# labevents_tble &lt;- labevents_tble %&gt;% ...
-labevents_tble &lt;- labevents_tble %&gt;% 
-  group_by(subject_id, itemid) %&gt;% 
-  pivot_wider(names_prefix = &quot;Lab&quot;, 
-              names_from = itemid, values_from = valuenum) %&gt;% 
-  show_query() %&gt;%
-  print(width = Inf)</code></pre>
-<pre><code>## &lt;SQL&gt;
-## SELECT `subject_id`, `itemid`, `labevent_id`, `hadm_id`, `specimen_id`, `charttime`, `storetime`, `value`, `valueuom`, `ref_range_lower`, `ref_range_upper`, `flag`, `priority`, `comments`, MAX(IF(`itemid` = 50960, `valuenum`, NULL)) AS `Lab50960`, MAX(IF(`itemid` = 51221, `valuenum`, NULL)) AS `Lab51221`, MAX(IF(`itemid` = 50971, `valuenum`, NULL)) AS `Lab50971`, MAX(IF(`itemid` = 50983, `valuenum`, NULL)) AS `Lab50983`, MAX(IF(`itemid` = 51301, `valuenum`, NULL)) AS `Lab51301`, MAX(IF(`itemid` = 50882, `valuenum`, NULL)) AS `Lab50882`, MAX(IF(`itemid` = 50893, `valuenum`, NULL)) AS `Lab50893`, MAX(IF(`itemid` = 50902, `valuenum`, NULL)) AS `Lab50902`, MAX(IF(`itemid` = 50912, `valuenum`, NULL)) AS `Lab50912`, MAX(IF(`itemid` = 50931, `valuenum`, NULL)) AS `Lab50931`
-## FROM (SELECT * FROM (SELECT *
-## FROM `labevents`
-## WHERE (`itemid` = 50912.0 OR `itemid` = 50971.0 OR `itemid` = 50983.0 OR `itemid` = 50902.0 OR `itemid` = 50882.0 OR `itemid` = 51221.0 OR `itemid` = 51301.0 OR `itemid` = 50931.0 OR `itemid` = 50931.0 OR `itemid` = 50960.0 OR `itemid` = 50893.0)) `LHS`
-## WHERE EXISTS (
-##   SELECT 1 FROM (SELECT `LHS`.`subject_id` AS `subject_id`, `LHS`.`intime` AS `intime`, `hadm_id`, `stay_id`, `first_careunit`, `last_careunit`, `outtime`, `los`
-## FROM (SELECT `subject_id`, MIN(`intime`) AS `intime`
-## FROM (SELECT `subject_id`, `intime`
-## FROM `icustays`) `q01`
-## GROUP BY `subject_id`) `LHS`
-## LEFT JOIN `icustays` AS `RHS`
-## ON (`LHS`.`subject_id` = `RHS`.`subject_id` AND `LHS`.`intime` = `RHS`.`intime`)
-## ) `RHS`
-##   WHERE (`LHS`.`subject_id` = `RHS`.`subject_id`)
-## )) `q01`
-## GROUP BY `subject_id`, `itemid`, `labevent_id`, `hadm_id`, `specimen_id`, `charttime`, `storetime`, `value`, `valueuom`, `ref_range_lower`, `ref_range_upper`, `flag`, `priority`, `comments`
-## # Source:   lazy query [?? x 24]
-## # Database: BigQueryConnection
-## # Groups:   subject_id, itemid
-##    subject_id itemid labevent_id  hadm_id specimen_id charttime          
-##         &lt;int&gt;  &lt;int&gt;       &lt;int&gt;    &lt;int&gt;       &lt;int&gt; &lt;dttm&gt;             
-##  1   18335310  50893   103376459 23964084    84775020 2121-11-04 21:35:00
-##  2   17449370  50882    92456756       NA    86608195 2154-08-11 11:50:00
-##  3   17587395  50912    94152224 28089062    99424252 2129-12-03 00:06:00
-##  4   18250208  51221   102274090 21824251    15526103 2149-05-27 20:00:00
-##  5   10320090  50893     3923453 24348675    94068975 2179-01-28 00:40:00
-##  6   10476869  50983     5742317 21334581    73788340 2134-08-12 00:00:00
-##  7   10639500  50983     7722805 20794194    80940892 2116-12-05 06:30:00
-##  8   10901624  50882    10877533 26295910    47849253 2151-11-03 07:00:00
-##  9   11512097  51221    18504589 24141276    98776584 2178-12-20 05:55:00
-## 10   12643870  50902    32627165 26111072    54793828 2200-05-27 15:25:00
+<pre><code>## Warning: ORDER BY is ignored in subqueries without LIMIT
+## ℹ Do you need to move arrange() later in the pipeline or use window_order() instead?</code></pre>
+<pre><code>## # Source:     lazy query [?? x 25]
+## # Database:   BigQueryConnection
+## # Ordered by: charttime, TRUE, subject_id
+##    labevent_id subject_id  hadm_id specimen_id charttime          
+##          &lt;int&gt;      &lt;int&gt;    &lt;int&gt;       &lt;int&gt; &lt;dttm&gt;             
+##  1         430   10000032 29079034    45622341 2180-07-23 21:45:00
+##  2         429   10000032 29079034    45622341 2180-07-23 21:45:00
+##  3         434   10000032 29079034    45622341 2180-07-23 21:45:00
+##  4         435   10000032 29079034    45622341 2180-07-23 21:45:00
+##  5         428   10000032 29079034    45622341 2180-07-23 21:45:00
+##  6         427   10000032 29079034    45622341 2180-07-23 21:45:00
+##  7         431   10000032 29079034    45622341 2180-07-23 21:45:00
+##  8         432   10000032 29079034    45622341 2180-07-23 21:45:00
+##  9        9540   10001217 24597018    44183783 2157-11-21 03:16:00
+## 10        9541   10001217 24597018    44183783 2157-11-21 03:16:00
 ##    storetime           value valueuom ref_range_lower ref_range_upper flag    
 ##    &lt;dttm&gt;              &lt;chr&gt; &lt;chr&gt;              &lt;dbl&gt;           &lt;dbl&gt; &lt;chr&gt;   
-##  1 2121-11-04 22:21:00 8.3   mg/dL                8.4            10.3 abnormal
-##  2 2154-08-11 18:07:00 35    mEq/L               22              32   abnormal
-##  3 2129-12-03 01:06:00 0.6   mg/dL                0.5             1.2 &lt;NA&gt;    
-##  4 2149-05-27 20:20:00 31.1  %                   40              51   abnormal
-##  5 2179-01-28 02:22:00 8.4   mg/dL                8.4            10.3 &lt;NA&gt;    
-##  6 2134-08-12 01:02:00 131   mEq/L              133             145   abnormal
-##  7 2116-12-05 08:01:00 137   mEq/L              133             145   &lt;NA&gt;    
-##  8 2151-11-03 08:46:00 24    mEq/L               22              32   &lt;NA&gt;    
-##  9 2178-12-20 08:01:00 36.4  %                   36              48   &lt;NA&gt;    
-## 10 2200-05-27 17:00:00 99    mEq/L               96             108   &lt;NA&gt;    
-##    priority comments Lab50960 Lab51221 Lab50971 Lab50983 Lab51301 Lab50882
-##    &lt;chr&gt;    &lt;chr&gt;       &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
-##  1 STAT     &lt;NA&gt;           NA     NA         NA       NA       NA       NA
-##  2 ROUTINE  &lt;NA&gt;           NA     NA         NA       NA       NA       35
-##  3 ROUTINE  &lt;NA&gt;           NA     NA         NA       NA       NA       NA
-##  4 ROUTINE  &lt;NA&gt;           NA     31.1       NA       NA       NA       NA
-##  5 ROUTINE  &lt;NA&gt;           NA     NA         NA       NA       NA       NA
-##  6 STAT     &lt;NA&gt;           NA     NA         NA      131       NA       NA
-##  7 STAT     &lt;NA&gt;           NA     NA         NA      137       NA       NA
-##  8 ROUTINE  &lt;NA&gt;           NA     NA         NA       NA       NA       24
-##  9 ROUTINE  &lt;NA&gt;           NA     36.4       NA       NA       NA       NA
-## 10 STAT     &lt;NA&gt;           NA     NA         NA       NA       NA       NA
-##    Lab50893 Lab50902 Lab50912 Lab50931
-##       &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
-##  1      8.3       NA     NA         NA
-##  2     NA         NA     NA         NA
-##  3     NA         NA      0.6       NA
-##  4     NA         NA     NA         NA
-##  5      8.4       NA     NA         NA
-##  6     NA         NA     NA         NA
-##  7     NA         NA     NA         NA
-##  8     NA         NA     NA         NA
-##  9     NA         NA     NA         NA
-## 10     NA         99     NA         NA
+##  1 2180-07-23 22:30:00 0.5   mg/dL                0.4             1.1 &lt;NA&gt;    
+##  2 2180-07-23 22:30:00 102   mEq/L               96             108   &lt;NA&gt;    
+##  3 2180-07-23 22:30:00 4.7   mEq/L                3.3             5.1 &lt;NA&gt;    
+##  4 2180-07-23 22:30:00 132   mEq/L              133             145   abnormal
+##  5 2180-07-23 22:30:00 9.3   mg/dL                8.4            10.3 &lt;NA&gt;    
+##  6 2180-07-23 22:30:00 21    mEq/L               22              32   abnormal
+##  7 2180-07-23 22:30:00 115   mg/dL               70             100   abnormal
+##  8 2180-07-23 22:30:00 2.3   mg/dL                1.6             2.6 &lt;NA&gt;    
+##  9 2157-11-21 04:53:00 8.2   mg/dL                8.4            10.3 abnormal
+## 10 2157-11-21 04:53:00 104   mEq/L               96             108   &lt;NA&gt;    
+##    priority comments                                             
+##    &lt;chr&gt;    &lt;chr&gt;                                                
+##  1 STAT     &lt;NA&gt;                                                 
+##  2 STAT     &lt;NA&gt;                                                 
+##  3 STAT     &lt;NA&gt;                                                 
+##  4 STAT     &lt;NA&gt;                                                 
+##  5 STAT     &lt;NA&gt;                                                 
+##  6 STAT     &lt;NA&gt;                                                 
+##  7 STAT     IF FASTING, 70-100 NORMAL, &gt;125 PROVISIONAL DIABETES.
+##  8 STAT     &lt;NA&gt;                                                 
+##  9 STAT     &lt;NA&gt;                                                 
+## 10 STAT     &lt;NA&gt;                                                 
+##    intime              outtime             Lab50912 Lab50882 Lab50971 Lab51221
+##    &lt;dttm&gt;              &lt;dttm&gt;                 &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+##  1 2180-07-23 14:00:00 2180-07-23 23:50:47      0.5       NA     NA         NA
+##  2 2180-07-23 14:00:00 2180-07-23 23:50:47     NA         NA     NA         NA
+##  3 2180-07-23 14:00:00 2180-07-23 23:50:47     NA         NA      4.7       NA
+##  4 2180-07-23 14:00:00 2180-07-23 23:50:47     NA         NA     NA         NA
+##  5 2180-07-23 14:00:00 2180-07-23 23:50:47     NA         NA     NA         NA
+##  6 2180-07-23 14:00:00 2180-07-23 23:50:47     NA         21     NA         NA
+##  7 2180-07-23 14:00:00 2180-07-23 23:50:47     NA         NA     NA         NA
+##  8 2180-07-23 14:00:00 2180-07-23 23:50:47     NA         NA     NA         NA
+##  9 2157-11-20 19:18:02 2157-11-21 22:08:00     NA         NA     NA         NA
+## 10 2157-11-20 19:18:02 2157-11-21 22:08:00     NA         NA     NA         NA
+##    Lab51301 Lab50983 Lab50960 Lab50893 Lab50902 Lab50931
+##       &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+##  1       NA       NA     NA       NA         NA       NA
+##  2       NA       NA     NA       NA        102       NA
+##  3       NA       NA     NA       NA         NA       NA
+##  4       NA      132     NA       NA         NA       NA
+##  5       NA       NA     NA        9.3       NA       NA
+##  6       NA       NA     NA       NA         NA       NA
+##  7       NA       NA     NA       NA         NA      115
+##  8       NA       NA      2.3     NA         NA       NA
+##  9       NA       NA     NA        8.2       NA       NA
+## 10       NA       NA     NA       NA        104       NA
 ## # … with more rows</code></pre>
+<p>Only keep the first lab measurements during ICU stay and pivot lab items to become variables/columns.</p>
 <ol start="7" style="list-style-type: decimal">
 <li>Connect to <code>chartevents</code> table and retrieve a subset that only contain subjects who appear in <code>icustays_tble</code> and the chart events listed in HW2.</li>
 </ol>
@@ -749,108 +695,56 @@ chartevents_tble &lt;- tbl(con, &quot;chartevents&quot;) %&gt;%
 ##  9 11                      11   mEq/L          1
 ## 10 8                        8   cmH2O          0
 ## # … with more rows</code></pre>
-<pre class="r"><code>chartevents_tble &lt;- chartevents_tble %&gt;% 
-  filter(itemid == 220045 | itemid == 220181 | itemid == 220179 | 
-           itemid == 223761 | itemid == 220210) %&gt;% 
-  semi_join(icustays_tble, by = &quot;subject_id&quot;) %&gt;% 
-  show_query() %&gt;%
-  print(width = Inf)</code></pre>
-<pre><code>## &lt;SQL&gt;
-## SELECT * FROM (SELECT *
-## FROM `chartevents`
-## WHERE (`itemid` = 220045.0 OR `itemid` = 220181.0 OR `itemid` = 220179.0 OR `itemid` = 223761.0 OR `itemid` = 220210.0)) `LHS`
-## WHERE EXISTS (
-##   SELECT 1 FROM (SELECT `LHS`.`subject_id` AS `subject_id`, `LHS`.`intime` AS `intime`, `hadm_id`, `stay_id`, `first_careunit`, `last_careunit`, `outtime`, `los`
-## FROM (SELECT `subject_id`, MIN(`intime`) AS `intime`
-## FROM (SELECT `subject_id`, `intime`
-## FROM `icustays`) `q01`
-## GROUP BY `subject_id`) `LHS`
-## LEFT JOIN `icustays` AS `RHS`
-## ON (`LHS`.`subject_id` = `RHS`.`subject_id` AND `LHS`.`intime` = `RHS`.`intime`)
-## ) `RHS`
-##   WHERE (`LHS`.`subject_id` = `RHS`.`subject_id`)
-## )
-## # Source:   lazy query [?? x 10]
-## # Database: BigQueryConnection
-##    subject_id  hadm_id  stay_id charttime           storetime           itemid
-##         &lt;int&gt;    &lt;int&gt;    &lt;int&gt; &lt;dttm&gt;              &lt;dttm&gt;               &lt;int&gt;
-##  1   12543250 20141818 32866003 2155-01-31 04:00:00 2155-01-31 04:25:00 223761
-##  2   12693636 28334016 38710412 2125-10-31 03:00:00 2125-10-31 05:05:00 223761
-##  3   15676468 27524163 32766625 2188-06-03 12:00:00 2188-06-03 12:10:00 223761
-##  4   16407546 27988115 37549759 2160-02-13 04:00:00 2160-02-13 04:08:00 223761
-##  5   16680284 24006731 30954212 2138-01-10 16:00:00 2138-01-10 16:04:00 223761
-##  6   18890809 27219731 31349748 2169-01-26 20:00:00 2169-01-26 20:09:00 223761
-##  7   11931968 27224323 34111300 2171-03-03 20:00:00 2171-03-03 20:06:00 223761
-##  8   12735744 26571796 31136595 2152-09-12 09:00:00 2152-09-12 08:55:00 223761
-##  9   13545680 21162749 36709485 2141-12-06 00:00:00 2141-12-06 00:03:00 223761
-## 10   14368590 21979494 38316005 2167-05-19 04:00:00 2167-05-19 06:04:00 223761
-##    value valuenum valueuom warning
-##    &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;      &lt;int&gt;
-##  1 99.6      99.6 °F             0
-##  2 99        99   °F             0
-##  3 99.9      99.9 °F             0
-##  4 99.2      99.2 °F             0
-##  5 99        99   °F             0
-##  6 100.7    101.  °F             1
-##  7 98.3      98.3 °F             0
-##  8 99.9      99.9 °F             0
-##  9 99.8      99.8 °F             0
-## 10 98.2      98.2 °F             0
-## # … with more rows</code></pre>
 <p>Only keep the first chart events during ICU stay and pivot chart events to become variables/columns.</p>
 <pre class="r"><code># # TODO
 # chartevents_tble &lt;- chartevents_tble %&gt;% ...
-chartevents_tble &lt;- chartevents_tble %&gt;% 
-  group_by(subject_id, itemid) %&gt;% 
-  pivot_wider(names_prefix = &quot;Lab&quot;, 
-              names_from = itemid, values_from = valuenum) %&gt;% 
-  show_query() %&gt;%
+chartevents_tble &lt;- chartevents_tble %&gt;%
+  filter(itemid == 220045 | itemid == 220181 | itemid == 220179 | 
+           itemid == 223761 | itemid == 220210) %&gt;%
+  left_join(select(icustays_tble, subject_id, intime, outtime), by = c(&quot;subject_id&quot;)) %&gt;% 
+  filter(charttime &gt;= intime &amp; charttime &lt;= outtime) %&gt;% 
+  group_by(subject_id) %&gt;% 
+  arrange(charttime, by.group = TRUE) %&gt;% 
+  slice_min(charttime, n = 1) %&gt;% 
+  select(-charttime, -intime, -outtime) %&gt;% 
+  ungroup() %&gt;% 
+  pivot_wider(names_prefix = &quot;Lab&quot;, names_from = itemid, values_from = valuenum) %&gt;% 
+  arrange(subject_id) %&gt;% 
   print(width = Inf)</code></pre>
-<pre><code>## &lt;SQL&gt;
-## SELECT `subject_id`, `itemid`, `hadm_id`, `stay_id`, `charttime`, `storetime`, `value`, `valueuom`, `warning`, MAX(IF(`itemid` = 223761, `valuenum`, NULL)) AS `Lab223761`, MAX(IF(`itemid` = 220179, `valuenum`, NULL)) AS `Lab220179`, MAX(IF(`itemid` = 220181, `valuenum`, NULL)) AS `Lab220181`, MAX(IF(`itemid` = 220210, `valuenum`, NULL)) AS `Lab220210`, MAX(IF(`itemid` = 220045, `valuenum`, NULL)) AS `Lab220045`
-## FROM (SELECT * FROM (SELECT *
-## FROM `chartevents`
-## WHERE (`itemid` = 220045.0 OR `itemid` = 220181.0 OR `itemid` = 220179.0 OR `itemid` = 223761.0 OR `itemid` = 220210.0)) `LHS`
-## WHERE EXISTS (
-##   SELECT 1 FROM (SELECT `LHS`.`subject_id` AS `subject_id`, `LHS`.`intime` AS `intime`, `hadm_id`, `stay_id`, `first_careunit`, `last_careunit`, `outtime`, `los`
-## FROM (SELECT `subject_id`, MIN(`intime`) AS `intime`
-## FROM (SELECT `subject_id`, `intime`
-## FROM `icustays`) `q01`
-## GROUP BY `subject_id`) `LHS`
-## LEFT JOIN `icustays` AS `RHS`
-## ON (`LHS`.`subject_id` = `RHS`.`subject_id` AND `LHS`.`intime` = `RHS`.`intime`)
-## ) `RHS`
-##   WHERE (`LHS`.`subject_id` = `RHS`.`subject_id`)
-## )) `q01`
-## GROUP BY `subject_id`, `itemid`, `hadm_id`, `stay_id`, `charttime`, `storetime`, `value`, `valueuom`, `warning`
-## # Source:   lazy query [?? x 14]
-## # Database: BigQueryConnection
-## # Groups:   subject_id, itemid
-##    subject_id itemid  hadm_id  stay_id charttime           storetime          
-##         &lt;int&gt;  &lt;int&gt;    &lt;int&gt;    &lt;int&gt; &lt;dttm&gt;              &lt;dttm&gt;             
-##  1   11869585 220045 25855136 39833916 2157-01-18 01:05:00 2157-01-18 01:32:00
-##  2   12408912 220045 22562143 34167318 2148-10-01 17:00:00 2148-10-01 17:20:00
-##  3   12388803 220045 27540833 36620035 2122-05-21 16:47:00 2122-05-21 16:58:00
-##  4   14122851 220045 23163478 37612746 2152-10-09 18:50:00 2152-10-09 19:21:00
-##  5   10393331 220045 21425859 38368971 2114-04-03 21:00:00 2114-04-03 21:36:00
-##  6   14973879 220045 25278106 39072564 2127-04-03 20:00:00 2127-04-03 20:04:00
-##  7   18902344 220045 21069275 36692806 2133-12-27 19:07:00 2133-12-27 19:33:00
-##  8   14353261 220045 27397608 35444841 2166-01-21 17:50:00 2166-01-21 17:50:00
-##  9   18228621 220045 22061759 31143804 2120-03-02 11:00:00 2120-03-02 11:46:00
-## 10   18918742 220045 29253150 37516352 2172-11-19 20:00:00 2172-11-19 20:13:00
-##    value valueuom warning Lab223761 Lab220179 Lab220181 Lab220210 Lab220045
-##    &lt;chr&gt; &lt;chr&gt;      &lt;int&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
-##  1 166   bpm            0        NA        NA        NA        NA       166
-##  2 101   bpm            0        NA        NA        NA        NA       101
-##  3 93    bpm            0        NA        NA        NA        NA        93
-##  4 87    bpm            0        NA        NA        NA        NA        87
-##  5 56    bpm            0        NA        NA        NA        NA        56
-##  6 79    bpm            0        NA        NA        NA        NA        79
-##  7 74    bpm            0        NA        NA        NA        NA        74
-##  8 87    bpm            0        NA        NA        NA        NA        87
-##  9 78    bpm            0        NA        NA        NA        NA        78
-## 10 69    bpm            0        NA        NA        NA        NA        69
+<pre><code>## Warning: ORDER BY is ignored in subqueries without LIMIT
+## ℹ Do you need to move arrange() later in the pipeline or use window_order() instead?
+## ORDER BY is ignored in subqueries without LIMIT
+## ℹ Do you need to move arrange() later in the pipeline or use window_order() instead?</code></pre>
+<pre><code>## # Source:     lazy query [?? x 12]
+## # Database:   BigQueryConnection
+## # Ordered by: subject_id
+##    subject_id  hadm_id  stay_id storetime           value valueuom warning
+##         &lt;int&gt;    &lt;int&gt;    &lt;int&gt; &lt;dttm&gt;              &lt;chr&gt; &lt;chr&gt;      &lt;int&gt;
+##  1   10000032 29079034 39553978 2180-07-23 14:20:00 98.7  °F             0
+##  2   10000980 26913865 39765666 2189-06-27 09:07:00 23    insp/min       0
+##  3   10001217 24597018 37067082 2157-11-20 19:30:00 104   mmHg           0
+##  4   10001217 24597018 37067082 2157-11-20 19:30:00 151   mmHg           0
+##  5   10001217 24597018 37067082 2157-11-20 19:30:00 86    bpm            0
+##  6   10001217 24597018 37067082 2157-11-20 19:30:00 18    insp/min       0
+##  7   10001725 25563031 31205490 2110-04-11 16:03:00 55    bpm            0
+##  8   10001884 26184834 37510196 2131-01-11 05:50:00 38    bpm            0
+##  9   10002013 23581541 39060235 2160-05-18 14:22:00 80    bpm            0
+## 10   10002013 23581541 39060235 2160-05-18 14:29:00 14    insp/min       0
+##    Lab220181 Lab223761 Lab220045 Lab220210 Lab220179
+##        &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+##  1        NA      98.7        NA        NA        NA
+##  2        NA      NA          NA        23        NA
+##  3       104      NA          NA        NA        NA
+##  4        NA      NA          NA        NA       151
+##  5        NA      NA          86        NA        NA
+##  6        NA      NA          NA        18        NA
+##  7        NA      NA          55        NA        NA
+##  8        NA      NA          38        NA        NA
+##  9        NA      NA          80        NA        NA
+## 10        NA      NA          NA        14        NA
 ## # … with more rows</code></pre>
+<pre class="r"><code>translate_sql(n_distinct(subject_id)==1)</code></pre>
+<pre><code>## &lt;SQL&gt; COUNT(DISTINCT `subject_id`) OVER () = 1.0</code></pre>
 <ol start="8" style="list-style-type: decimal">
 <li>Put things together. This step is similar to Q7 of HW2. Using one chain of pipes <code>%&gt;%</code> to perform following data wrangling steps: (i) start with the <code>icustays_tble</code> for the first ICU stay of each unique patient, (ii) merge in admissions and patients tables, (iii) keep adults only (age at admission &gt;= 18), (iv) merge in the labevents and chartevents tables, (v) create an indicator for 30-day mortality, (vi) save the final tibble to an <code>icu_cohort.rds</code> R data file in the <code>mimiciv_shiny</code> folder.</li>
 </ol>
@@ -858,8 +752,20 @@ chartevents_tble &lt;- chartevents_tble %&gt;%
 if (!dir.exists(&quot;mimiciv_shiny&quot;)) {
   dir.create(&quot;mimiciv_shiny&quot;)
 }</code></pre>
-<pre class="r"><code># # TODO
-# icu_cohort &lt;- icustays_tble %&gt;% ...</code></pre>
+<pre class="r"><code>icu_cohort &lt;- icustays_tble %&gt;% 
+  left_join(admissions_tble, by = c(&quot;subject_id&quot;, &quot;hadm_id&quot;)) %&gt;% 
+  left_join(patients_tble, by = c(&quot;subject_id&quot;)) %&gt;% 
+  left_join(labevents_tble, by = c(&quot;subject_id&quot;)) %&gt;% 
+  left_join(chartevents_tble, by = c(&quot;subject_id&quot;, &quot;stay_id&quot;)) %&gt;%
+  mutate(age_admit = anchor_age + year(admittime) - anchor_year) %&gt;% 
+  filter(age_admit &gt;= 18) %&gt;% 
+  mutate(mort_time = IFNULL(dod, NA)) %&gt;% 
+  mutate(mort_time = DATE_DIFF(dod, admittime, DAY)) %&gt;% 
+  mutate(thirty_day_mort =  mort_time &lt;= 30) %&gt;%
+  mutate(thirty_day_mort = IFNULL(thirty_day_mort, FALSE)) %&gt;%
+  print(width = Inf) %&gt;% 
+  collect() %&gt;% 
+  write_rds(&quot;mimic_icu_cohort.rds&quot;)</code></pre>
 <p>Close database connection and clear workspace.</p>
 <pre class="r"><code>dbDisconnect(con)
 rm(list = ls())</code></pre>
