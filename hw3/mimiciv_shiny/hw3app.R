@@ -50,7 +50,7 @@ server1 <- function(input, output) {
 
 library(tidyverse)
 setwd("/home/tokramm/biostat-203b-2022-winter/hw3/mimiciv_shiny")
-mimic <- read_rds("mimic_icu_cohort.rds")
+mimic <- read_rds("mimic_ICU_cohort.rds")
 
 
 
@@ -67,42 +67,87 @@ mimic <- mimic %>%
          Systolic_niBP = Lab220179, Body_temp_F = Lab223761,
          Respiratory_rate = Lab220210)
 mimic$ethnicity <- as.factor(mimic$ethnicity)
+mimic$insurance <- as.factor(mimic$insurance)
+mimic$marital_status <- as.factor(mimic$marital_status)
+
+data3 <- mimic$ethnicity
 
 
 
 
-
-
-
-# Define UI for dataset viewer app ----
 ui <- fluidPage(
   
-  # App title ----
+
   titlePanel("Lab Measurements by Ethnicity"),
   
-  # Sidebar layout with a input and output definitions ----
+
   sidebarLayout(
     
-    # Sidebar panel for inputs ----
+
     sidebarPanel(
       
-      # Input: Selector for choosing dataset ----
+
       selectInput(inputId = "variable",
                   label = "Select Ethnicity:", 
                   choices = levels(mimic$ethnicity)),
+      
+      selectInput(inputId = "variable1",
+                  label = "Select Measure:", 
+                  choices = c("Creatinine", 
+                              "Bicarbonate", "Calcium", "Potassium", "Sodium", 
+                              "Chloride", "Hematocrit", "WBC", "Glucose", 
+                              "Magnesium", "Calcium", "Heart_Rate", "Mean_niBP",
+                              "Systolic_niBP", "Body_temp_F", 
+                              "Respiratory_rate")),
     ),
     
-    # Main panel for displaying outputs ----
+
     mainPanel(
       label = "Summary Statistics",
-      dataTableOutput("table1")
+      dataTableOutput("table1"),
+      dataTableOutput("table2"),
+      plotOutput("plot1"),
+      plotOutput("plot2")
       
     )
   )
 )
 
-# Define server logic to summarize and view selected dataset ----
+ggplot(mimic, aes(ethnicity, Potassium)) +
+  geom_boxplot()
+
+
+boxplot(Potassium~ethnicity,data = mimic,col = "#75AADB", pch = 19)
+
+data2 <- mimic %>%
+  group_by(ethnicity) %>% 
+  summarise_at(c("Creatinine", 
+                 "Bicarbonate", "Calcium", "Potassium", "Sodium", "Chloride", 
+                 "Hematocrit", "WBC", "Glucose", "Magnesium", "Calcium", 
+                 "Heart_Rate", "Mean_niBP", "Systolic_niBP", "Body_temp_F", "Respiratory_rate"), 
+               mean, na.rm = TRUE) 
+
+
 server <- function(input, output) {
+  data2 <- mimic
+  data2$ethnicity <- factor(data2$ethnicity, labels = c("Am. Ind.", "Asian", 
+                                                        "Black", "Hisp", "Other", "Un. Obt.", "Unkwn", "White"))
+  
+  data2$age_cat <- cut(data2$anchor_age, breaks = c(18, 35, 55, 70, 91))
+  
+  plot_form1 <- reactive({
+    paste(input$variable1, "~ethnicity")
+  })
+  
+  plot_form2 <- reactive({
+    paste(input$variable1, "~age_cat")
+  })
+  
+  # Return the formula text for printing as a caption ----
+ # output$caption <- renderText({
+ #   plot_form1()
+ # })
+  
   
   
   output$table1 = renderDataTable({
@@ -110,7 +155,25 @@ server <- function(input, output) {
     summary(data1[,c(41:50, 56:60)], na.rm = TRUE)
   })
   
+  output$table2 = renderDataTable({
+    data1 <- mimic[which(mimic$ethnicity == input$variable), ]
+    summary(data1[,c(15,17,63)], na.rm = TRUE)
+  })
+  
+  output$plot1 = renderPlot({
+    boxplot(as.formula(plot_form1()),
+            data = data2,
+            col = "#75CDCD", pch = 19)
+  })
+  
+  output$plot2 = renderPlot({
+    boxplot(as.formula(plot_form2()),
+            data = data2,
+            col = "#75CDCD", pch = 19)
+  })
+  
 }
+
 
 shinyApp(ui, server)
 
