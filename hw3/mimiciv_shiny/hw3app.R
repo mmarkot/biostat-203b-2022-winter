@@ -1,76 +1,22 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+
 
 library(shiny)
-
-# Define UI for application that draws a histogram
-ui1 <- fluidPage(
-
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("distPlot")
-        )
-    )
-)
-
-# Define server logic required to draw a histogram
-server1 <- function(input, output) {
-
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    })
-}
-
-
-
-
 library(tidyverse)
 setwd("/home/tokramm/biostat-203b-2022-winter/hw3/mimiciv_shiny")
 mimic <- read_rds("mimic_ICU_cohort.rds")
 
 
-
-
-mimic <- mimic %>% 
-  group_by(subject_id) %>% 
-  distinct(subject_id, .keep_all = TRUE)
-
-mimic <- mimic %>%
-  rename(Creatinine = Lab50912, Potassium = Lab50971, Sodium = Lab50983, 
-         Chloride = Lab50902, Bicarbonate = Lab50882, Hematocrit = Lab51221,
-         WBC = Lab51301, Glucose = Lab50931, Magnesium = Lab50960,
-         Calcium = Lab50893, Heart_Rate = Lab220045, Mean_niBP =  Lab220181,
-         Systolic_niBP = Lab220179, Body_temp_F = Lab223761,
-         Respiratory_rate = Lab220210)
+#mimic <- mimic %>%
+ # rename(Creatinine = Lab50912, Potassium = Lab50971, Sodium = Lab50983, 
+ #        Chloride = Lab50902, Bicarbonate = Lab50882, Hematocrit = Lab51221,
+ #        WBC = Lab51301, Glucose = Lab50931, Magnesium = Lab50960,
+ #        Calcium = Lab50893, Heart_Rate = Lab220045, Mean_niBP =  Lab220181,
+ #        Systolic_niBP = Lab220179, Body_temp_F = Lab223761,
+ #        Respiratory_rate = Lab220210)
 mimic$ethnicity <- as.factor(mimic$ethnicity)
 mimic$insurance <- as.factor(mimic$insurance)
 mimic$marital_status <- as.factor(mimic$marital_status)
 
-data3 <- mimic$ethnicity
 
 
 
@@ -78,7 +24,7 @@ data3 <- mimic$ethnicity
 ui <- fluidPage(
   
 
-  titlePanel("Lab Measurements by Ethnicity"),
+  titlePanel("Mimic ICU Cohort Data Visualization"),
   
 
   sidebarLayout(
@@ -113,25 +59,13 @@ ui <- fluidPage(
   )
 )
 
-ggplot(mimic, aes(ethnicity, Potassium)) +
-  geom_boxplot()
-
-
-boxplot(Potassium~ethnicity,data = mimic,col = "#75AADB", pch = 19)
-
-data2 <- mimic %>%
-  group_by(ethnicity) %>% 
-  summarise_at(c("Creatinine", 
-                 "Bicarbonate", "Calcium", "Potassium", "Sodium", "Chloride", 
-                 "Hematocrit", "WBC", "Glucose", "Magnesium", "Calcium", 
-                 "Heart_Rate", "Mean_niBP", "Systolic_niBP", "Body_temp_F", "Respiratory_rate"), 
-               mean, na.rm = TRUE) 
 
 
 server <- function(input, output) {
   data2 <- mimic
-  data2$ethnicity <- factor(data2$ethnicity, labels = c("Am. Ind.", "Asian", 
-                                                        "Black", "Hisp", "Other", "Un. Obt.", "Unkwn", "White"))
+  data2$ethnicity <- factor(data2$ethnicity, 
+                            labels = c("Am. Ind.", "Asian", "Black", "Hisp", 
+                                       "Other", "Un. Obt.", "Unkwn", "White"))
   
   data2$age_cat <- cut(data2$anchor_age, breaks = c(18, 35, 55, 70, 91))
   
@@ -142,12 +76,6 @@ server <- function(input, output) {
   plot_form2 <- reactive({
     paste(input$variable1, "~age_cat")
   })
-  
-  # Return the formula text for printing as a caption ----
- # output$caption <- renderText({
- #   plot_form1()
- # })
-  
   
   
   output$table1 = renderDataTable({
@@ -177,5 +105,3 @@ server <- function(input, output) {
 
 shinyApp(ui, server)
 
-
-shinyApp(ui = ui1, server = server1)
