@@ -294,9 +294,6 @@ icustays_tble &lt;- tbl(con, &quot;icustays&quot;) %&gt;%
   left_join(icustays_tble, by = c(&quot;subject_id&quot;, &quot;intime&quot;)) %&gt;%
   show_query() %&gt;%
   print(width = Inf)</code></pre>
-<pre><code>## Warning: Missing values are always removed in SQL.
-## Use `MIN(x, na.rm = TRUE)` to silence this warning
-## This warning is displayed only once per session.</code></pre>
 <pre><code>## &lt;SQL&gt;
 ## SELECT `LHS`.`subject_id` AS `subject_id`, `LHS`.`intime` AS `intime`, `hadm_id`, `stay_id`, `first_careunit`, `last_careunit`, `outtime`, `los`
 ## FROM (SELECT `subject_id`, MIN(`intime`) AS `intime`
@@ -336,9 +333,7 @@ icustays_tble &lt;- tbl(con, &quot;icustays&quot;) %&gt;%
 <ol start="4" style="list-style-type: decimal">
 <li>Connect to the <code>admissions</code> table and only keep the patients who have a match in <code>icustays_tble</code> (according to <code>subject_id</code> and <code>hadm_id</code>).</li>
 </ol>
-<pre class="r"><code># # TODO
-# admissions_tble &lt;- 
-admissions_tble &lt;- tbl(con, &quot;admissions&quot;) %&gt;%
+<pre class="r"><code>admissions_tble &lt;- tbl(con, &quot;admissions&quot;) %&gt;%
   show_query() %&gt;%
   print(width = Inf)</code></pre>
 <pre><code>## &lt;SQL&gt;
@@ -466,9 +461,7 @@ admissions_tble &lt;- tbl(con, &quot;admissions&quot;) %&gt;%
 <ol start="5" style="list-style-type: decimal">
 <li>Connect to the <code>patients</code> table and only keep the patients who have a match in <code>icustays_tble</code> (according to <code>subject_id</code>).</li>
 </ol>
-<pre class="r"><code># # TODO
-# patients_tble &lt;-
-patients_tble &lt;- tbl(con, &quot;patients&quot;) %&gt;%
+<pre class="r"><code>patients_tble &lt;- tbl(con, &quot;patients&quot;) %&gt;%
   show_query() %&gt;%
   print(width = Inf)</code></pre>
 <pre><code>## &lt;SQL&gt;
@@ -524,9 +517,7 @@ patients_tble &lt;- tbl(con, &quot;patients&quot;) %&gt;%
 <ol start="6" style="list-style-type: decimal">
 <li>Connect to the <code>labevents</code> table and retrieve a subset that only contain subjects who appear in <code>icustays_tble</code> and the lab items listed in HW2.</li>
 </ol>
-<pre class="r"><code># # TODO
-# labevents_tble &lt;- 
-labevents_tble &lt;- tbl(con, &quot;labevents&quot;) %&gt;%
+<pre class="r"><code>labevents_tble &lt;- tbl(con, &quot;labevents&quot;) %&gt;%
   show_query() %&gt;%
   print(width = Inf)</code></pre>
 <pre><code>## &lt;SQL&gt;
@@ -576,49 +567,43 @@ labevents_tble &lt;- tbl(con, &quot;labevents&quot;) %&gt;%
            itemid == 50902 | itemid == 50882 | itemid == 51221 | 
            itemid == 51301 | itemid == 50931 | itemid == 50931 | 
            itemid == 50960 | itemid == 50893) %&gt;% 
- left_join(select(icustays_tble, subject_id, intime, outtime), by = c(&quot;subject_id&quot;)) %&gt;% 
+ left_join(select(icustays_tble, subject_id, intime, outtime), 
+           by = c(&quot;subject_id&quot;)) %&gt;% 
   filter(charttime &gt;= intime &amp; charttime &lt;= outtime) %&gt;% 
-  #group_by(subject_id, itemid) %&gt;% 
-  #arrange(charttime, by.group = TRUE) %&gt;% 
-  #slice_min(charttime, n = 1) %&gt;% 
-  #select(-charttime, -intime, -outtime) %&gt;% 
- # ungroup() %&gt;% 
-  pivot_wider(names_prefix = &quot;Lab&quot;, names_from = itemid, values_from = valuenum) %&gt;% 
+  pivot_wider(names_prefix = &quot;Lab&quot;, names_from = itemid, 
+              values_from = valuenum) %&gt;% 
   group_by(subject_id) %&gt;% 
   arrange(charttime, by.group = TRUE) %&gt;% 
   slice_min(charttime, n = 1) %&gt;%
   ungroup() %&gt;% 
-  arrange(subject_id) %&gt;% 
   print(width = Inf)</code></pre>
-<pre><code>## Warning: ORDER BY is ignored in subqueries without LIMIT
-## ℹ Do you need to move arrange() later in the pipeline or use window_order() instead?</code></pre>
 <pre><code>## # Source:     lazy query [?? x 25]
 ## # Database:   BigQueryConnection
-## # Ordered by: charttime, TRUE, subject_id
+## # Ordered by: charttime, TRUE
 ##    labevent_id subject_id  hadm_id specimen_id charttime          
 ##          &lt;int&gt;      &lt;int&gt;    &lt;int&gt;       &lt;int&gt; &lt;dttm&gt;             
-##  1         430   10000032 29079034    45622341 2180-07-23 21:45:00
-##  2         429   10000032 29079034    45622341 2180-07-23 21:45:00
-##  3         434   10000032 29079034    45622341 2180-07-23 21:45:00
-##  4         435   10000032 29079034    45622341 2180-07-23 21:45:00
-##  5         428   10000032 29079034    45622341 2180-07-23 21:45:00
-##  6         427   10000032 29079034    45622341 2180-07-23 21:45:00
-##  7         431   10000032 29079034    45622341 2180-07-23 21:45:00
-##  8         432   10000032 29079034    45622341 2180-07-23 21:45:00
-##  9        9540   10001217 24597018    44183783 2157-11-21 03:16:00
-## 10        9541   10001217 24597018    44183783 2157-11-21 03:16:00
+##  1      837207   10071869 20895291    46955880 2111-01-01 00:21:00
+##  2      837208   10071869 20895291    46955880 2111-01-01 00:21:00
+##  3      837213   10071869 20895291    46955880 2111-01-01 00:21:00
+##  4      837246   10071869 20895291    70600265 2111-01-01 00:21:00
+##  5      837214   10071869 20895291    46955880 2111-01-01 00:21:00
+##  6      837210   10071869 20895291    46955880 2111-01-01 00:21:00
+##  7      837211   10071869 20895291    46955880 2111-01-01 00:21:00
+##  8      837206   10071869 20895291    46955880 2111-01-01 00:21:00
+##  9      837205   10071869 20895291    46955880 2111-01-01 00:21:00
+## 10      837223   10071869 20895291    70600265 2111-01-01 00:21:00
 ##    storetime           value valueuom ref_range_lower ref_range_upper flag    
 ##    &lt;dttm&gt;              &lt;chr&gt; &lt;chr&gt;              &lt;dbl&gt;           &lt;dbl&gt; &lt;chr&gt;   
-##  1 2180-07-23 22:30:00 0.5   mg/dL                0.4             1.1 &lt;NA&gt;    
-##  2 2180-07-23 22:30:00 102   mEq/L               96             108   &lt;NA&gt;    
-##  3 2180-07-23 22:30:00 4.7   mEq/L                3.3             5.1 &lt;NA&gt;    
-##  4 2180-07-23 22:30:00 132   mEq/L              133             145   abnormal
-##  5 2180-07-23 22:30:00 9.3   mg/dL                8.4            10.3 &lt;NA&gt;    
-##  6 2180-07-23 22:30:00 21    mEq/L               22              32   abnormal
-##  7 2180-07-23 22:30:00 115   mg/dL               70             100   abnormal
-##  8 2180-07-23 22:30:00 2.3   mg/dL                1.6             2.6 &lt;NA&gt;    
-##  9 2157-11-21 04:53:00 8.2   mg/dL                8.4            10.3 abnormal
-## 10 2157-11-21 04:53:00 104   mEq/L               96             108   &lt;NA&gt;    
+##  1 2111-01-01 01:48:00 113   mEq/L               96             108   abnormal
+##  2 2111-01-01 01:48:00 0.6   mg/dL                0.5             1.2 &lt;NA&gt;    
+##  3 2111-01-01 01:48:00 3.6   mEq/L                3.3             5.1 &lt;NA&gt;    
+##  4 2111-01-01 01:04:00 8.6   K/uL                 4              10   &lt;NA&gt;    
+##  5 2111-01-01 01:48:00 146   mEq/L              133             145   abnormal
+##  6 2111-01-01 01:48:00 109   mg/dL               70             100   abnormal
+##  7 2111-01-01 01:48:00 2.0   mg/dL                1.6             2.6 &lt;NA&gt;    
+##  8 2111-01-01 01:48:00 7.5   mg/dL                8.4            10.3 abnormal
+##  9 2111-01-01 01:48:00 26    mEq/L               22              32   &lt;NA&gt;    
+## 10 2111-01-01 01:04:00 21.8  %                   40              51   abnormal
 ##    priority comments                                             
 ##    &lt;chr&gt;    &lt;chr&gt;                                                
 ##  1 STAT     &lt;NA&gt;                                                 
@@ -626,43 +611,41 @@ labevents_tble &lt;- tbl(con, &quot;labevents&quot;) %&gt;%
 ##  3 STAT     &lt;NA&gt;                                                 
 ##  4 STAT     &lt;NA&gt;                                                 
 ##  5 STAT     &lt;NA&gt;                                                 
-##  6 STAT     &lt;NA&gt;                                                 
-##  7 STAT     IF FASTING, 70-100 NORMAL, &gt;125 PROVISIONAL DIABETES.
+##  6 STAT     If fasting, 70-100 normal, &gt;125 provisional diabetes.
+##  7 STAT     &lt;NA&gt;                                                 
 ##  8 STAT     &lt;NA&gt;                                                 
 ##  9 STAT     &lt;NA&gt;                                                 
 ## 10 STAT     &lt;NA&gt;                                                 
 ##    intime              outtime             Lab50912 Lab50882 Lab50971 Lab51221
 ##    &lt;dttm&gt;              &lt;dttm&gt;                 &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
-##  1 2180-07-23 14:00:00 2180-07-23 23:50:47      0.5       NA     NA         NA
-##  2 2180-07-23 14:00:00 2180-07-23 23:50:47     NA         NA     NA         NA
-##  3 2180-07-23 14:00:00 2180-07-23 23:50:47     NA         NA      4.7       NA
-##  4 2180-07-23 14:00:00 2180-07-23 23:50:47     NA         NA     NA         NA
-##  5 2180-07-23 14:00:00 2180-07-23 23:50:47     NA         NA     NA         NA
-##  6 2180-07-23 14:00:00 2180-07-23 23:50:47     NA         21     NA         NA
-##  7 2180-07-23 14:00:00 2180-07-23 23:50:47     NA         NA     NA         NA
-##  8 2180-07-23 14:00:00 2180-07-23 23:50:47     NA         NA     NA         NA
-##  9 2157-11-20 19:18:02 2157-11-21 22:08:00     NA         NA     NA         NA
-## 10 2157-11-20 19:18:02 2157-11-21 22:08:00     NA         NA     NA         NA
+##  1 2110-12-31 23:22:00 2111-01-12 01:28:43     NA         NA     NA       NA  
+##  2 2110-12-31 23:22:00 2111-01-12 01:28:43      0.6       NA     NA       NA  
+##  3 2110-12-31 23:22:00 2111-01-12 01:28:43     NA         NA      3.6     NA  
+##  4 2110-12-31 23:22:00 2111-01-12 01:28:43     NA         NA     NA       NA  
+##  5 2110-12-31 23:22:00 2111-01-12 01:28:43     NA         NA     NA       NA  
+##  6 2110-12-31 23:22:00 2111-01-12 01:28:43     NA         NA     NA       NA  
+##  7 2110-12-31 23:22:00 2111-01-12 01:28:43     NA         NA     NA       NA  
+##  8 2110-12-31 23:22:00 2111-01-12 01:28:43     NA         NA     NA       NA  
+##  9 2110-12-31 23:22:00 2111-01-12 01:28:43     NA         26     NA       NA  
+## 10 2110-12-31 23:22:00 2111-01-12 01:28:43     NA         NA     NA       21.8
 ##    Lab51301 Lab50983 Lab50960 Lab50893 Lab50902 Lab50931
 ##       &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
-##  1       NA       NA     NA       NA         NA       NA
-##  2       NA       NA     NA       NA        102       NA
-##  3       NA       NA     NA       NA         NA       NA
-##  4       NA      132     NA       NA         NA       NA
-##  5       NA       NA     NA        9.3       NA       NA
-##  6       NA       NA     NA       NA         NA       NA
-##  7       NA       NA     NA       NA         NA      115
-##  8       NA       NA      2.3     NA         NA       NA
-##  9       NA       NA     NA        8.2       NA       NA
-## 10       NA       NA     NA       NA        104       NA
+##  1     NA         NA       NA     NA        113       NA
+##  2     NA         NA       NA     NA         NA       NA
+##  3     NA         NA       NA     NA         NA       NA
+##  4      8.6       NA       NA     NA         NA       NA
+##  5     NA        146       NA     NA         NA       NA
+##  6     NA         NA       NA     NA         NA      109
+##  7     NA         NA        2     NA         NA       NA
+##  8     NA         NA       NA      7.5       NA       NA
+##  9     NA         NA       NA     NA         NA       NA
+## 10     NA         NA       NA     NA         NA       NA
 ## # … with more rows</code></pre>
 <p>Only keep the first lab measurements during ICU stay and pivot lab items to become variables/columns.</p>
 <ol start="7" style="list-style-type: decimal">
 <li>Connect to <code>chartevents</code> table and retrieve a subset that only contain subjects who appear in <code>icustays_tble</code> and the chart events listed in HW2.</li>
 </ol>
-<pre class="r"><code># # TODO
-# chartevents_tble &lt;- 
-chartevents_tble &lt;- tbl(con, &quot;chartevents&quot;) %&gt;%
+<pre class="r"><code>chartevents_tble &lt;- tbl(con, &quot;chartevents&quot;) %&gt;%
   show_query() %&gt;%
   print(width = Inf)</code></pre>
 <pre><code>## &lt;SQL&gt;
@@ -696,9 +679,7 @@ chartevents_tble &lt;- tbl(con, &quot;chartevents&quot;) %&gt;%
 ## 10 8                        8   cmH2O          0
 ## # … with more rows</code></pre>
 <p>Only keep the first chart events during ICU stay and pivot chart events to become variables/columns.</p>
-<pre class="r"><code># # TODO
-# chartevents_tble &lt;- chartevents_tble %&gt;% ...
-chartevents_tble &lt;- chartevents_tble %&gt;%
+<pre class="r"><code>chartevents_tble &lt;- chartevents_tble %&gt;%
   filter(itemid == 220045 | itemid == 220181 | itemid == 220179 | 
            itemid == 223761 | itemid == 220210) %&gt;%
   left_join(select(icustays_tble, subject_id, intime, outtime), by = c(&quot;subject_id&quot;)) %&gt;% 
@@ -709,42 +690,34 @@ chartevents_tble &lt;- chartevents_tble %&gt;%
   select(-charttime, -intime, -outtime) %&gt;% 
   ungroup() %&gt;% 
   pivot_wider(names_prefix = &quot;Lab&quot;, names_from = itemid, values_from = valuenum) %&gt;% 
-  arrange(subject_id) %&gt;% 
   print(width = Inf)</code></pre>
-<pre><code>## Warning: ORDER BY is ignored in subqueries without LIMIT
-## ℹ Do you need to move arrange() later in the pipeline or use window_order() instead?
-## ORDER BY is ignored in subqueries without LIMIT
-## ℹ Do you need to move arrange() later in the pipeline or use window_order() instead?</code></pre>
-<pre><code>## # Source:     lazy query [?? x 12]
-## # Database:   BigQueryConnection
-## # Ordered by: subject_id
+<pre><code>## # Source:   lazy query [?? x 12]
+## # Database: BigQueryConnection
 ##    subject_id  hadm_id  stay_id storetime           value valueuom warning
 ##         &lt;int&gt;    &lt;int&gt;    &lt;int&gt; &lt;dttm&gt;              &lt;chr&gt; &lt;chr&gt;      &lt;int&gt;
-##  1   10000032 29079034 39553978 2180-07-23 14:20:00 98.7  °F             0
-##  2   10000980 26913865 39765666 2189-06-27 09:07:00 23    insp/min       0
-##  3   10001217 24597018 37067082 2157-11-20 19:30:00 104   mmHg           0
-##  4   10001217 24597018 37067082 2157-11-20 19:30:00 151   mmHg           0
-##  5   10001217 24597018 37067082 2157-11-20 19:30:00 86    bpm            0
-##  6   10001217 24597018 37067082 2157-11-20 19:30:00 18    insp/min       0
-##  7   10001725 25563031 31205490 2110-04-11 16:03:00 55    bpm            0
-##  8   10001884 26184834 37510196 2131-01-11 05:50:00 38    bpm            0
-##  9   10002013 23581541 39060235 2160-05-18 14:22:00 80    bpm            0
-## 10   10002013 23581541 39060235 2160-05-18 14:29:00 14    insp/min       0
+##  1   10267191 26548951 31683995 2151-04-26 01:41:00 83    bpm            0
+##  2   10700813 24165455 33231398 2180-10-29 03:20:00 74    mmHg           0
+##  3   10700813 24165455 33231398 2180-10-29 03:20:00 107   mmHg           0
+##  4   10800546 28248634 36782769 2198-01-15 20:20:00 118   mmHg           0
+##  5   10821252 28704205 34704319 2122-03-17 21:32:00 98.2  °F             0
+##  6   10821252 28704205 34704319 2122-03-17 21:32:00 93    mmHg           0
+##  7   10933772 21418086 35224427 2142-06-10 12:09:00 81    bpm            0
+##  8   11250079 28678828 34352531 2179-09-15 20:04:00 20    insp/min       0
+##  9   11374532 27499142 39599342 2138-12-09 17:04:00 32    insp/min       0
+## 10   11443579 21275284 33549488 2162-06-03 16:18:00 19    insp/min       0
 ##    Lab220181 Lab223761 Lab220045 Lab220210 Lab220179
 ##        &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
-##  1        NA      98.7        NA        NA        NA
-##  2        NA      NA          NA        23        NA
-##  3       104      NA          NA        NA        NA
-##  4        NA      NA          NA        NA       151
-##  5        NA      NA          86        NA        NA
-##  6        NA      NA          NA        18        NA
-##  7        NA      NA          55        NA        NA
-##  8        NA      NA          38        NA        NA
-##  9        NA      NA          80        NA        NA
-## 10        NA      NA          NA        14        NA
+##  1        NA      NA          83        NA        NA
+##  2        74      NA          NA        NA        NA
+##  3        NA      NA          NA        NA       107
+##  4       118      NA          NA        NA        NA
+##  5        NA      98.2        NA        NA        NA
+##  6        93      NA          NA        NA        NA
+##  7        NA      NA          81        NA        NA
+##  8        NA      NA          NA        20        NA
+##  9        NA      NA          NA        32        NA
+## 10        NA      NA          NA        19        NA
 ## # … with more rows</code></pre>
-<pre class="r"><code>translate_sql(n_distinct(subject_id)==1)</code></pre>
-<pre><code>## &lt;SQL&gt; COUNT(DISTINCT `subject_id`) OVER () = 1.0</code></pre>
 <ol start="8" style="list-style-type: decimal">
 <li>Put things together. This step is similar to Q7 of HW2. Using one chain of pipes <code>%&gt;%</code> to perform following data wrangling steps: (i) start with the <code>icustays_tble</code> for the first ICU stay of each unique patient, (ii) merge in admissions and patients tables, (iii) keep adults only (age at admission &gt;= 18), (iv) merge in the labevents and chartevents tables, (v) create an indicator for 30-day mortality, (vi) save the final tibble to an <code>icu_cohort.rds</code> R data file in the <code>mimiciv_shiny</code> folder.</li>
 </ol>

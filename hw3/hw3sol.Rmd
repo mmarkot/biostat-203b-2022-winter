@@ -63,14 +63,14 @@ dbListTables(con)
 ```
 
 3. Connect to the `icustays` table.
-```{r}
+```{r, warning=FALSE}
 # full ICU stays table
 icustays_tble <- tbl(con, "icustays") %>%
   show_query() %>%
   print(width = Inf)
 ```
 We only keep the first ICU stay. Following code is kind of a hack, using the `summarise_all(min)` function. It seems that `slice_min()`, `slice_head()`, `distinct(, .keep_all = TRUE)` don't work with `dbplyr`+`bigrquery` at the moment.
-```{r}
+```{r, warning=FALSE}
 icustays_tble <- icustays_tble %>% 
   select(subject_id, intime) %>% 
   group_by(subject_id) %>% 
@@ -82,15 +82,13 @@ icustays_tble <- icustays_tble %>%
 
 
 4. Connect to the `admissions` table and only keep the patients who have a match in `icustays_tble` (according to `subject_id` and `hadm_id`).
-```{r}
-# # TODO
-# admissions_tble <- 
+```{r, warning=FALSE}
 admissions_tble <- tbl(con, "admissions") %>%
   show_query() %>%
   print(width = Inf)
 ```
 
-```{r}
+```{r, warning=FALSE}
 admissions_tble <- admissions_tble %>% 
   semi_join(icustays_tble, by = "subject_id", "hadm_id") %>% 
   show_query() %>%
@@ -98,15 +96,13 @@ admissions_tble <- admissions_tble %>%
 ```
 
 5. Connect to the `patients` table and only keep the patients who have a match in `icustays_tble` (according to `subject_id`).
-```{r}
-# # TODO
-# patients_tble <-
+```{r, warning=FALSE}
 patients_tble <- tbl(con, "patients") %>%
   show_query() %>%
   print(width = Inf)
 ```
 
-```{r}
+```{r, warning=FALSE}
 patients_tble <- patients_tble %>% 
   semi_join(icustays_tble, by = "subject_id") %>% 
   show_query() %>%
@@ -114,33 +110,27 @@ patients_tble <- patients_tble %>%
 ```
 
 6. Connect to the `labevents` table and retrieve a subset that only contain subjects who appear in `icustays_tble` and the lab items listed in HW2. 
-```{r}
-# # TODO
-# labevents_tble <- 
+```{r, warning=FALSE}
 labevents_tble <- tbl(con, "labevents") %>%
   show_query() %>%
   print(width = Inf)
 ```
 
-```{r}
+```{r, warning=FALSE}
 labevents_tble <- labevents_tble %>% 
   filter(itemid == 50912 | itemid == 50971 | itemid == 50983 | 
            itemid == 50902 | itemid == 50882 | itemid == 51221 | 
            itemid == 51301 | itemid == 50931 | itemid == 50931 | 
            itemid == 50960 | itemid == 50893) %>% 
- left_join(select(icustays_tble, subject_id, intime, outtime), by = c("subject_id")) %>% 
+ left_join(select(icustays_tble, subject_id, intime, outtime), 
+           by = c("subject_id")) %>% 
   filter(charttime >= intime & charttime <= outtime) %>% 
-  #group_by(subject_id, itemid) %>% 
-  #arrange(charttime, by.group = TRUE) %>% 
-  #slice_min(charttime, n = 1) %>% 
-  #select(-charttime, -intime, -outtime) %>% 
- # ungroup() %>% 
-  pivot_wider(names_prefix = "Lab", names_from = itemid, values_from = valuenum) %>% 
+  pivot_wider(names_prefix = "Lab", names_from = itemid, 
+              values_from = valuenum) %>% 
   group_by(subject_id) %>% 
   arrange(charttime, by.group = TRUE) %>% 
   slice_min(charttime, n = 1) %>%
   ungroup() %>% 
-  arrange(subject_id) %>% 
   print(width = Inf)
 
 ```
@@ -148,22 +138,16 @@ Only keep the first lab measurements during ICU stay and pivot lab items to beco
 
 
 7. Connect to `chartevents` table and retrieve a subset that only contain subjects who appear in `icustays_tble` and the chart events listed in HW2.
-```{r}
-# # TODO
-# chartevents_tble <- 
+```{r, warning=FALSE}
 chartevents_tble <- tbl(con, "chartevents") %>%
   show_query() %>%
   print(width = Inf)
 ```
 
-```{r}
-
-```
 
 Only keep the first chart events during ICU stay and pivot chart events to become variables/columns.
-```{r}
-# # TODO
-# chartevents_tble <- chartevents_tble %>% ...
+```{r, warning=FALSE}
+
 chartevents_tble <- chartevents_tble %>%
   filter(itemid == 220045 | itemid == 220181 | itemid == 220179 | 
            itemid == 223761 | itemid == 220210) %>%
@@ -175,10 +159,9 @@ chartevents_tble <- chartevents_tble %>%
   select(-charttime, -intime, -outtime) %>% 
   ungroup() %>% 
   pivot_wider(names_prefix = "Lab", names_from = itemid, values_from = valuenum) %>% 
-  arrange(subject_id) %>% 
   print(width = Inf)
 
-translate_sql(n_distinct(subject_id)==1)
+
 ```
 
 8. Put things together. This step is similar to Q7 of HW2. Using one chain of pipes `%>%` to perform following data wrangling steps: (i) start with the `icustays_tble` for the first ICU stay of each unique patient, (ii) merge in admissions and patients tables, (iii) keep adults only (age at admission >= 18), (iv) merge in the labevents and chartevents tables, (v) create an indicator for 30-day mortality, (vi) save the final tibble to an `icu_cohort.rds` R data file in the `mimiciv_shiny` folder.
@@ -190,7 +173,7 @@ if (!dir.exists("mimiciv_shiny")) {
 }
 ```
 
-```{r, eval = F}
+```{r, eval = F, , warning=FALSE}
 icu_cohort <- icustays_tble %>% 
   left_join(admissions_tble, by = c("subject_id", "hadm_id")) %>% 
   left_join(patients_tble, by = c("subject_id")) %>% 
@@ -210,7 +193,7 @@ icu_cohort <- icustays_tble %>%
 
 
 Close database connection and clear workspace.
-```{r, eval=F}
+```{r, eval=F, , warning=FALSE}
 dbDisconnect(con)
 rm(list = ls())
 ```
