@@ -81,15 +81,7 @@ mimic_icu$language <- as.factor(mimic_icu$language)
 4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
 
 ```{r}
-mimic_test <- mimic_icu[sample(nrow(mimic_icu), size=100), ]
-
-mimic_test1 <- select(mimic_test, 1, 4, 15:18, 20:21, 39:48, 54:58, 61)
-
-mimic_test1 <- select(mimic_test1, -23)
-
 mimic_icu <- select(mimic_icu, 1, 4, 15:18, 20:21, 39:48, 54:58, 61)
-mimic_icu <- select(mimic_test1, -23)
-
 ```
 
 ```{r, eval=FALSE}
@@ -104,15 +96,20 @@ seqTime <- system.time(
 )
 miceObj
 write_rds(completeData(miceObj), "mimic_icu.rds")
+saveRDS(miceObj, "miceObj.rds")
 ```
 
 ```{r}
 mimic <- read_rds("mimic_icu.rds")
-
-mimic_test <- mimic[[1]]
+mice_Obj <- read_rds("miceObj.rds")
 ```
 
 5. Make imputation diagnostic plots and explain what they mean.
+
+```{r}
+
+plotDistributions(mice_Obj,vars='allNumeric')
+```
 
 6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.
 
