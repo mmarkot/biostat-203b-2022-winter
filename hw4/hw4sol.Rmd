@@ -33,7 +33,25 @@ Through the Shiny app developed in HW3, we observe abundant missing values in th
 
 1. Explain the jargon MCAR, MAR, and MNAR.
 
+**Solution:** MCAR refers to data missing completely at random. This means that 
+there is no pattern to the data that is missing and there is no difference 
+between observtions with missing and non-missing data. If diagnostic plots 
+differ between the imputed and non-missing data, this can mean that MCAR does 
+not apply. MAR means missing at random. This is data that is missing 
+correlatedly with an observed variable. In this case there is information as to 
+why the data is missing for certain observations. MNAR mean missing not at 
+random. This category explains cases where there is a pattern to the missing 
+data but it does not fit the MAR definition because the explanation of the 
+pattern is unobserved. Essentially the correlatedness of the missing data is 
+clear but the cause is unknown.
+
 2. Explain in a couple of sentences how the Multiple Imputation by Chained Equations (MICE) work.
+
+**Solution:** MICE iteratively imputes data for missing values going variable by
+variable using all other variables. Missing data is first imputed randomly and 
+then the full data for all columns but one are used to predict values for that 
+one with random forest. This is repeated for all variables, and if necessary the
+entire process can be repeated if the values have not converged.
 
 3. Perform a data quality check of the ICU stays data. Discard variables with substantial missingness, say >5000 `NA`s. Replace apparent data entry errors by `NA`s.
 
@@ -110,8 +128,16 @@ mice_Obj <- read_rds("miceObj.rds")
 
 plotDistributions(mice_Obj,vars='allNumeric')
 ```
+**Solution:** The density for all variables of each model shows very little 
+deviation from the non-missing data. The one observation of note is that the 
+imputed models have slightly higher maximum densities for many of the variables.  
+
 
 6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.
+
+```{r}
+mimic_1 <- mimic[[1]]
+```
 
 ## Q2. Predicting 30-day mortality
 
@@ -119,6 +145,27 @@ Develop at least two analytic approaches for predicting the 30-day mortality of 
 
 1. Partition data into 80% training set and 20% test set. Stratify partitioning according the 30-day mortality status.
 
+```{r}
+mimic_d <- mimic_1[which(mimic_1$thirty_day_mort==TRUE)] 
+mimic_a <- mimic_1[-which(mimic_1$thirty_day_mort==TRUE)]
+```
+
+```{r}
+set.seed(12345)
+test1_num <- sample(0.2 * nrow(mimic_d))
+test1 <- mimic_d[test1_num]
+train1 <- mimic_d[-test1_num]
+
+test2_num <- sample(0.2 * nrow(mimic_a))
+test2 <- mimic_a[test2_num]
+train2 <- mimic_a[-test2_num]
+
+test <- rbind(test1, test2)
+train <- rbind(train1, train2)
+```
+
 2. Train the models using the training set.
+
+
 
 3. Compare model prediction performance on the test set.
