@@ -139,7 +139,10 @@ imputed models have slightly higher maximum densities for many of the variables.
 mimic_1 <- mimic[[1]]
 ```
 
-**Solution:** The correct multiple imputation strategy is to 
+**Solution:** The correct multiple imputation strategy is to perform analysis 
+on all imputed data sets and average those results, to capture the variability 
+of the imputed data. Averaging all of the data sets before analysis does not 
+capture the variation and neither does choosing one imputed data set.
 
 ## Q2. Predicting 30-day mortality
 
@@ -173,7 +176,6 @@ rm(train1)
 rm(train2)
 rm(test2)
 rm(test2_num)
-rm(train2)
 ```
 
 2. Train the models using the training set.
@@ -193,7 +195,7 @@ pred1 <- predict(logmodel1, type = "response")
 
 pred_out <- data.frame(truth = train$thirty_day_mort, predicted = pred1)
 
-predicted <- pred1>.25
+predicted <- pred1>.50
 accuracy <- table(predicted, factor(train$thirty_day_mort))
 accuracy
 
@@ -204,7 +206,6 @@ misclass
 sensitivity
 specificity
 
-summary(train$thirty_day_mort)
 ```
 
 3. Compare model prediction performance on the test set.
@@ -216,11 +217,14 @@ logmodel2 <- glm(thirty_day_mort ~ insurance + language + marital_status +
                     Chloride + Glucose + Mean_niBP + Body_temp_F + Heart_Rate + 
                     Respiratory_rate + Systolic_niBP, data = test, 
                   family = "binomial")
+```
+
+```{r}
 pred2 <- predict(logmodel2, type = "response")
 
 pred_out <- data.frame(truth = test$thirty_day_mort, predicted = pred2)
 
-predicted <- pred2>.25
+predicted <- pred2>.50
 accuracy <- table(predicted, factor(test$thirty_day_mort))
 accuracy
 

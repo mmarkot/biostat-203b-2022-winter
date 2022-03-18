@@ -278,7 +278,7 @@ mice_Obj &lt;- read_rds(&quot;miceObj.rds&quot;)</code></pre>
 <li>Choose one of the imputed data sets to be used in Q2. This is <strong>not</strong> a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.</li>
 </ol>
 <pre class="r"><code>mimic_1 &lt;- mimic[[1]]</code></pre>
-<p><strong>Solution:</strong> The correct multiple imputation strategy is to</p>
+<p><strong>Solution:</strong> The correct multiple imputation strategy is to perform analysis on all imputed data sets and average those results, to capture the variability of the imputed data. Averaging all of the data sets before analysis does not capture the variation and neither does choosing one imputed data set.</p>
 </div>
 <div id="q2.-predicting-30-day-mortality" class="section level2">
 <h2>Q2. Predicting 30-day mortality</h2>
@@ -307,9 +307,7 @@ rm(mimic_a)
 rm(train1)
 rm(train2)
 rm(test2)
-rm(test2_num)
-rm(train2)</code></pre>
-<pre><code>## Warning in rm(train2): object &#39;train2&#39; not found</code></pre>
+rm(test2_num)</code></pre>
 <ol start="2" style="list-style-type: decimal">
 <li>Train the models using the training set.</li>
 </ol>
@@ -379,25 +377,22 @@ summary(logmodel1)</code></pre>
 
 pred_out &lt;- data.frame(truth = train$thirty_day_mort, predicted = pred1)
 
-predicted &lt;- pred1&gt;.25
+predicted &lt;- pred1&gt;.50
 accuracy &lt;- table(predicted, factor(train$thirty_day_mort))
 accuracy</code></pre>
 <pre><code>##          
 ## predicted FALSE  TRUE
-##     FALSE 36194  3318
-##     TRUE   1978  1031</code></pre>
+##     FALSE 38021  4190
+##     TRUE    151   159</code></pre>
 <pre class="r"><code>misclass &lt;- (accuracy[2] + accuracy[3])/nrow(train)
 sensitivity &lt;- accuracy[4]/(accuracy[4] + accuracy[3])
 specificity &lt;- accuracy[1]/(accuracy[1] + accuracy[2])
 misclass</code></pre>
-<pre><code>## [1] 0.1245502</code></pre>
+<pre><code>## [1] 0.1020907</code></pre>
 <pre class="r"><code>sensitivity</code></pre>
-<pre><code>## [1] 0.237066</code></pre>
+<pre><code>## [1] 0.03656013</code></pre>
 <pre class="r"><code>specificity</code></pre>
-<pre><code>## [1] 0.9481819</code></pre>
-<pre class="r"><code>summary(train$thirty_day_mort)</code></pre>
-<pre><code>##    Mode   FALSE    TRUE 
-## logical   38172    4349</code></pre>
+<pre><code>## [1] 0.9960442</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>Compare model prediction performance on the test set.</li>
 </ol>
@@ -406,27 +401,27 @@ misclass</code></pre>
                     Potassium + Hematocrit + WBC + Sodium + Magnesium + Calcium + 
                     Chloride + Glucose + Mean_niBP + Body_temp_F + Heart_Rate + 
                     Respiratory_rate + Systolic_niBP, data = test, 
-                  family = &quot;binomial&quot;)
-pred2 &lt;- predict(logmodel2, type = &quot;response&quot;)
+                  family = &quot;binomial&quot;)</code></pre>
+<pre class="r"><code>pred2 &lt;- predict(logmodel2, type = &quot;response&quot;)
 
 pred_out &lt;- data.frame(truth = test$thirty_day_mort, predicted = pred2)
 
-predicted &lt;- pred2&gt;.25
+predicted &lt;- pred2&gt;.50
 accuracy &lt;- table(predicted, factor(test$thirty_day_mort))
 accuracy</code></pre>
 <pre><code>##          
 ## predicted FALSE TRUE
-##     FALSE  8963  747
-##     TRUE    579  340</code></pre>
+##     FALSE  9471 1000
+##     TRUE     71   87</code></pre>
 <pre class="r"><code>misclass &lt;- (accuracy[2] + accuracy[3])/nrow(test)
 sensitivity &lt;- accuracy[4]/(accuracy[4] + accuracy[3])
 specificity &lt;- accuracy[1]/(accuracy[1] + accuracy[2])
 misclass</code></pre>
-<pre><code>## [1] 0.124753</code></pre>
+<pre><code>## [1] 0.1007621</code></pre>
 <pre class="r"><code>sensitivity</code></pre>
-<pre><code>## [1] 0.3127875</code></pre>
+<pre><code>## [1] 0.0800368</code></pre>
 <pre class="r"><code>specificity</code></pre>
-<pre><code>## [1] 0.9393209</code></pre>
+<pre><code>## [1] 0.9925592</code></pre>
 </div>
 
 
