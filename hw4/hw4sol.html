@@ -172,6 +172,10 @@ pre code {
 <ul>
 <li><a href="#q1.-missing-data">Q1. Missing data</a></li>
 <li><a href="#q2.-predicting-30-day-mortality">Q2. Predicting 30-day mortality</a></li>
+<li><a href="#logistic-regression-model">Logistic Regression Model</a></li>
+<li><a href="#random-forest-model">Random Forest Model</a></li>
+<li><a href="#logistic-regression-model-1">Logistic Regression Model</a></li>
+<li><a href="#random-forest">Random Forest</a></li>
 </ul>
 </div>
 
@@ -311,6 +315,9 @@ rm(test2_num)</code></pre>
 <ol start="2" style="list-style-type: decimal">
 <li>Train the models using the training set.</li>
 </ol>
+</div>
+<div id="logistic-regression-model" class="section level2">
+<h2>Logistic Regression Model</h2>
 <pre class="r"><code>logmodel1 &lt;-  glm(thirty_day_mort ~ insurance + language + marital_status + 
                   ethnicity + gender + anchor_age + Creatinine + Bicarbonate + 
                     Potassium + Hematocrit + WBC + Sodium + Magnesium + Calcium + 
@@ -393,9 +400,63 @@ misclass</code></pre>
 <pre><code>## [1] 0.03656013</code></pre>
 <pre class="r"><code>specificity</code></pre>
 <pre><code>## [1] 0.9960442</code></pre>
+</div>
+<div id="random-forest-model" class="section level2">
+<h2>Random Forest Model</h2>
+<pre class="r"><code>library(randomForest)</code></pre>
+<pre><code>## randomForest 4.6-14</code></pre>
+<pre><code>## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;randomForest&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     combine</code></pre>
+<pre><code>## The following object is masked from &#39;package:ggplot2&#39;:
+## 
+##     margin</code></pre>
+<pre class="r"><code>train$thirty_day_mort_fac &lt;- as.factor(train$thirty_day_mort)
+rfmodel1 &lt;- randomForest(thirty_day_mort_fac ~ gender + anchor_age + 
+                Creatinine + Bicarbonate + Potassium + Hematocrit + WBC + 
+                Sodium + Magnesium + Calcium + Glucose + Mean_niBP + 
+                Body_temp_F + Heart_Rate + Respiratory_rate + Systolic_niBP,
+                data = train, nodesize = 5, ntree=500)
+print(rfmodel1)</code></pre>
+<pre><code>## 
+## Call:
+##  randomForest(formula = thirty_day_mort_fac ~ gender + anchor_age +      Creatinine + Bicarbonate + Potassium + Hematocrit + WBC +      Sodium + Magnesium + Calcium + Glucose + Mean_niBP + Body_temp_F +      Heart_Rate + Respiratory_rate + Systolic_niBP, data = train,      nodesize = 5, ntree = 500) 
+##                Type of random forest: classification
+##                      Number of trees: 500
+## No. of variables tried at each split: 4
+## 
+##         OOB estimate of  error rate: 10.23%
+## Confusion matrix:
+##       FALSE TRUE class.error
+## FALSE 38057  115 0.003012679
+## TRUE   4233  116 0.973327202</code></pre>
+<pre class="r"><code>pred1 &lt;- predict(rfmodel1, train)
+pred_out &lt;- data.frame(truth = train$thirty_day_mort, predicted = pred1)
+
+accuracy &lt;- table(pred1, factor(train$thirty_day_mort))
+accuracy</code></pre>
+<pre><code>##        
+## pred1   FALSE  TRUE
+##   FALSE 38172  1272
+##   TRUE      0  3077</code></pre>
+<pre class="r"><code>misclass &lt;- (accuracy[2] + accuracy[3])/nrow(train)
+sensitivity &lt;- accuracy[4]/(accuracy[4] + accuracy[3])
+specificity &lt;- accuracy[1]/(accuracy[1] + accuracy[2])
+misclass</code></pre>
+<pre><code>## [1] 0.02991463</code></pre>
+<pre class="r"><code>sensitivity</code></pre>
+<pre><code>## [1] 0.707519</code></pre>
+<pre class="r"><code>specificity</code></pre>
+<pre><code>## [1] 1</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>Compare model prediction performance on the test set.</li>
 </ol>
+</div>
+<div id="logistic-regression-model-1" class="section level2">
+<h2>Logistic Regression Model</h2>
 <pre class="r"><code>logmodel2 &lt;- glm(thirty_day_mort ~ insurance + language + marital_status + 
                   ethnicity + gender + anchor_age + Creatinine + Bicarbonate + 
                     Potassium + Hematocrit + WBC + Sodium + Magnesium + Calcium + 
@@ -422,6 +483,33 @@ misclass</code></pre>
 <pre><code>## [1] 0.0800368</code></pre>
 <pre class="r"><code>specificity</code></pre>
 <pre><code>## [1] 0.9925592</code></pre>
+</div>
+<div id="random-forest" class="section level2">
+<h2>Random Forest</h2>
+<pre class="r"><code>test$thirty_day_mort_fac &lt;- as.factor(test$thirty_day_mort)</code></pre>
+<pre class="r"><code>rfmodel2 &lt;- randomForest(thirty_day_mort_fac ~ gender + anchor_age + 
+                Creatinine + Bicarbonate + Potassium + Hematocrit + WBC + 
+                Sodium + Magnesium + Calcium + Glucose + Mean_niBP + 
+                Body_temp_F + Heart_Rate + Respiratory_rate + Systolic_niBP,
+                data = test, nodesize = 5, ntree=500)</code></pre>
+<pre class="r"><code>pred2 &lt;- predict(rfmodel2, test)
+pred_out &lt;- data.frame(truth = test$thirty_day_mort, predicted = pred2)
+
+accuracy &lt;- table(pred2, factor(test$thirty_day_mort))
+accuracy</code></pre>
+<pre><code>##        
+## pred2   FALSE TRUE
+##   FALSE  9542  281
+##   TRUE      0  806</code></pre>
+<pre class="r"><code>misclass &lt;- (accuracy[2] + accuracy[3])/nrow(train)
+sensitivity &lt;- accuracy[4]/(accuracy[4] + accuracy[3])
+specificity &lt;- accuracy[1]/(accuracy[1] + accuracy[2])
+misclass</code></pre>
+<pre><code>## [1] 0.006608499</code></pre>
+<pre class="r"><code>sensitivity</code></pre>
+<pre><code>## [1] 0.7414903</code></pre>
+<pre class="r"><code>specificity</code></pre>
+<pre><code>## [1] 1</code></pre>
 </div>
 
 

@@ -180,6 +180,7 @@ rm(test2_num)
 
 2. Train the models using the training set.
 
+## Logistic Regression Model
 ```{r}
 logmodel1 <-  glm(thirty_day_mort ~ insurance + language + marital_status + 
                   ethnicity + gender + anchor_age + Creatinine + Bicarbonate + 
@@ -207,9 +208,40 @@ sensitivity
 specificity
 
 ```
+## Random Forest Model
+
+```{r}
+library(randomForest)
+```
+
+```{r}
+train$thirty_day_mort_fac <- as.factor(train$thirty_day_mort)
+rfmodel1 <- randomForest(thirty_day_mort_fac ~ gender + anchor_age + 
+                Creatinine + Bicarbonate + Potassium + Hematocrit + WBC + 
+                Sodium + Magnesium + Calcium + Glucose + Mean_niBP + 
+                Body_temp_F + Heart_Rate + Respiratory_rate + Systolic_niBP,
+                data = train, nodesize = 5, ntree=500)
+print(rfmodel1)
+```
+
+```{r}
+pred1 <- predict(rfmodel1, train)
+pred_out <- data.frame(truth = train$thirty_day_mort, predicted = pred1)
+
+accuracy <- table(pred1, factor(train$thirty_day_mort))
+accuracy
+
+misclass <- (accuracy[2] + accuracy[3])/nrow(train)
+sensitivity <- accuracy[4]/(accuracy[4] + accuracy[3])
+specificity <- accuracy[1]/(accuracy[1] + accuracy[2])
+misclass
+sensitivity
+specificity
+```
 
 3. Compare model prediction performance on the test set.
 
+## Logistic Regression Model
 ```{r}
 logmodel2 <- glm(thirty_day_mort ~ insurance + language + marital_status + 
                   ethnicity + gender + anchor_age + Creatinine + Bicarbonate + 
@@ -229,6 +261,34 @@ accuracy <- table(predicted, factor(test$thirty_day_mort))
 accuracy
 
 misclass <- (accuracy[2] + accuracy[3])/nrow(test)
+sensitivity <- accuracy[4]/(accuracy[4] + accuracy[3])
+specificity <- accuracy[1]/(accuracy[1] + accuracy[2])
+misclass
+sensitivity
+specificity
+```
+
+## Random Forest
+```{r}
+test$thirty_day_mort_fac <- as.factor(test$thirty_day_mort)
+```
+
+```{r}
+rfmodel2 <- randomForest(thirty_day_mort_fac ~ gender + anchor_age + 
+                Creatinine + Bicarbonate + Potassium + Hematocrit + WBC + 
+                Sodium + Magnesium + Calcium + Glucose + Mean_niBP + 
+                Body_temp_F + Heart_Rate + Respiratory_rate + Systolic_niBP,
+                data = test, nodesize = 5, ntree=500)
+```
+
+```{r}
+pred2 <- predict(rfmodel2, test)
+pred_out <- data.frame(truth = test$thirty_day_mort, predicted = pred2)
+
+accuracy <- table(pred2, factor(test$thirty_day_mort))
+accuracy
+
+misclass <- (accuracy[2] + accuracy[3])/nrow(train)
 sensitivity <- accuracy[4]/(accuracy[4] + accuracy[3])
 specificity <- accuracy[1]/(accuracy[1] + accuracy[2])
 misclass
