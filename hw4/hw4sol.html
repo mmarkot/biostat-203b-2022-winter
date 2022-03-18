@@ -278,6 +278,7 @@ mice_Obj &lt;- read_rds(&quot;miceObj.rds&quot;)</code></pre>
 <li>Choose one of the imputed data sets to be used in Q2. This is <strong>not</strong> a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.</li>
 </ol>
 <pre class="r"><code>mimic_1 &lt;- mimic[[1]]</code></pre>
+<p><strong>Solution:</strong> The correct multiple imputation strategy is to</p>
 </div>
 <div id="q2.-predicting-30-day-mortality" class="section level2">
 <h2>Q2. Predicting 30-day mortality</h2>
@@ -297,11 +298,135 @@ test2 &lt;- mimic_a[test2_num]
 train2 &lt;- mimic_a[-test2_num]
 
 test &lt;- rbind(test1, test2)
-train &lt;- rbind(train1, train2)</code></pre>
+train &lt;- rbind(train1, train2)
+
+rm(mimic_d)
+rm(test1)
+rm(test1_num)
+rm(mimic_a)
+rm(train1)
+rm(train2)
+rm(test2)
+rm(test2_num)
+rm(train2)</code></pre>
+<pre><code>## Warning in rm(train2): object &#39;train2&#39; not found</code></pre>
 <ol start="2" style="list-style-type: decimal">
-<li><p>Train the models using the training set.</p></li>
-<li><p>Compare model prediction performance on the test set.</p></li>
+<li>Train the models using the training set.</li>
 </ol>
+<pre class="r"><code>logmodel1 &lt;-  glm(thirty_day_mort ~ insurance + language + marital_status + 
+                  ethnicity + gender + anchor_age + Creatinine + Bicarbonate + 
+                    Potassium + Hematocrit + WBC + Sodium + Magnesium + Calcium + 
+                    Chloride + Glucose + Mean_niBP + Body_temp_F + Heart_Rate + 
+                    Respiratory_rate + Systolic_niBP, data = train, 
+                  family = &quot;binomial&quot;)
+summary(logmodel1)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = thirty_day_mort ~ insurance + language + marital_status + 
+##     ethnicity + gender + anchor_age + Creatinine + Bicarbonate + 
+##     Potassium + Hematocrit + WBC + Sodium + Magnesium + Calcium + 
+##     Chloride + Glucose + Mean_niBP + Body_temp_F + Heart_Rate + 
+##     Respiratory_rate + Systolic_niBP, family = &quot;binomial&quot;, data = train)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.0280  -0.4748  -0.3569  -0.2663   3.0277  
+## 
+## Coefficients:
+##                                   Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                      7.4052840  2.7081864   2.734  0.00625 ** 
+## insuranceMedicare               -0.0640713  0.0783249  -0.818  0.41335    
+## insuranceOther                  -0.1093028  0.0754014  -1.450  0.14717    
+## languageENGLISH                  0.0960379  0.0607798   1.580  0.11408    
+## marital_statusMARRIED           -0.0351249  0.0667451  -0.526  0.59871    
+## marital_statusSINGLE             0.0849791  0.0704770   1.206  0.22791    
+## marital_statusWIDOWED           -0.0386466  0.0756872  -0.511  0.60962    
+## ethnicityASIAN                   0.2591539  0.3990136   0.649  0.51602    
+## ethnicityBLACK/AFRICAN AMERICAN  0.0049467  0.3904835   0.013  0.98989    
+## ethnicityHISPANIC/LATINO         0.0228070  0.4013364   0.057  0.95468    
+## ethnicityOTHER                   0.0587366  0.3949008   0.149  0.88176    
+## ethnicityUNABLE TO OBTAIN        0.6287377  0.4049218   1.553  0.12049    
+## ethnicityUNKNOWN                 0.9505210  0.3881758   2.449  0.01434 *  
+## ethnicityWHITE                   0.0165689  0.3866084   0.043  0.96582    
+## genderM                         -0.0740370  0.0355321  -2.084  0.03719 *  
+## anchor_age                       0.0305931  0.0013698  22.334  &lt; 2e-16 ***
+## Creatinine                       0.1412166  0.0180965   7.804 6.02e-15 ***
+## Bicarbonate                     -0.0755546  0.0064261 -11.757  &lt; 2e-16 ***
+## Potassium                        0.1825710  0.0469166   3.891 9.97e-05 ***
+## Hematocrit                       0.0318965  0.0046975   6.790 1.12e-11 ***
+## WBC                              0.0331745  0.0044779   7.409 1.28e-13 ***
+## Sodium                          -0.0136304  0.0063700  -2.140  0.03237 *  
+## Magnesium                        0.0988273  0.0889936   1.110  0.26678    
+## Calcium                         -0.0995099  0.0370754  -2.684  0.00727 ** 
+## Chloride                         0.0034723  0.0055735   0.623  0.53328    
+## Glucose                          0.0033063  0.0005667   5.834 5.41e-09 ***
+## Mean_niBP                       -0.0023731  0.0013445  -1.765  0.07756 .  
+## Body_temp_F                     -0.1170817  0.0251893  -4.648 3.35e-06 ***
+## Heart_Rate                       0.0037375  0.0015968   2.341  0.01925 *  
+## Respiratory_rate                 0.0442103  0.0035179  12.567  &lt; 2e-16 ***
+## Systolic_niBP                   -0.0022122  0.0012901  -1.715  0.08639 .  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 28069  on 42520  degrees of freedom
+## Residual deviance: 24987  on 42490  degrees of freedom
+## AIC: 25049
+## 
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>pred1 &lt;- predict(logmodel1, type = &quot;response&quot;)
+
+pred_out &lt;- data.frame(truth = train$thirty_day_mort, predicted = pred1)
+
+predicted &lt;- pred1&gt;.25
+accuracy &lt;- table(predicted, factor(train$thirty_day_mort))
+accuracy</code></pre>
+<pre><code>##          
+## predicted FALSE  TRUE
+##     FALSE 36194  3318
+##     TRUE   1978  1031</code></pre>
+<pre class="r"><code>misclass &lt;- (accuracy[2] + accuracy[3])/nrow(train)
+sensitivity &lt;- accuracy[4]/(accuracy[4] + accuracy[3])
+specificity &lt;- accuracy[1]/(accuracy[1] + accuracy[2])
+misclass</code></pre>
+<pre><code>## [1] 0.1245502</code></pre>
+<pre class="r"><code>sensitivity</code></pre>
+<pre><code>## [1] 0.237066</code></pre>
+<pre class="r"><code>specificity</code></pre>
+<pre><code>## [1] 0.9481819</code></pre>
+<pre class="r"><code>summary(train$thirty_day_mort)</code></pre>
+<pre><code>##    Mode   FALSE    TRUE 
+## logical   38172    4349</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>Compare model prediction performance on the test set.</li>
+</ol>
+<pre class="r"><code>logmodel2 &lt;- glm(thirty_day_mort ~ insurance + language + marital_status + 
+                  ethnicity + gender + anchor_age + Creatinine + Bicarbonate + 
+                    Potassium + Hematocrit + WBC + Sodium + Magnesium + Calcium + 
+                    Chloride + Glucose + Mean_niBP + Body_temp_F + Heart_Rate + 
+                    Respiratory_rate + Systolic_niBP, data = test, 
+                  family = &quot;binomial&quot;)
+pred2 &lt;- predict(logmodel2, type = &quot;response&quot;)
+
+pred_out &lt;- data.frame(truth = test$thirty_day_mort, predicted = pred2)
+
+predicted &lt;- pred2&gt;.25
+accuracy &lt;- table(predicted, factor(test$thirty_day_mort))
+accuracy</code></pre>
+<pre><code>##          
+## predicted FALSE TRUE
+##     FALSE  8963  747
+##     TRUE    579  340</code></pre>
+<pre class="r"><code>misclass &lt;- (accuracy[2] + accuracy[3])/nrow(test)
+sensitivity &lt;- accuracy[4]/(accuracy[4] + accuracy[3])
+specificity &lt;- accuracy[1]/(accuracy[1] + accuracy[2])
+misclass</code></pre>
+<pre><code>## [1] 0.124753</code></pre>
+<pre class="r"><code>sensitivity</code></pre>
+<pre><code>## [1] 0.3127875</code></pre>
+<pre class="r"><code>specificity</code></pre>
+<pre><code>## [1] 0.9393209</code></pre>
 </div>
 
 

@@ -139,6 +139,8 @@ imputed models have slightly higher maximum densities for many of the variables.
 mimic_1 <- mimic[[1]]
 ```
 
+**Solution:** The correct multiple imputation strategy is to 
+
 ## Q2. Predicting 30-day mortality
 
 Develop at least two analytic approaches for predicting the 30-day mortality of patients admitted to ICU using demographic information (gender, age, marital status, ethnicity), first lab measurements during ICU stay, and first vital measurements during ICU stay. For example, you can use (1) logistic regression (`glm()` function in base R or keras), (2) logistic regression with lasso penalty (glmnet or keras package), (3) random forest (randomForest package), or (4) neural network (keras package).
@@ -162,10 +164,70 @@ train2 <- mimic_a[-test2_num]
 
 test <- rbind(test1, test2)
 train <- rbind(train1, train2)
+
+rm(mimic_d)
+rm(test1)
+rm(test1_num)
+rm(mimic_a)
+rm(train1)
+rm(train2)
+rm(test2)
+rm(test2_num)
+rm(train2)
 ```
 
 2. Train the models using the training set.
 
+```{r}
+logmodel1 <-  glm(thirty_day_mort ~ insurance + language + marital_status + 
+                  ethnicity + gender + anchor_age + Creatinine + Bicarbonate + 
+                    Potassium + Hematocrit + WBC + Sodium + Magnesium + Calcium + 
+                    Chloride + Glucose + Mean_niBP + Body_temp_F + Heart_Rate + 
+                    Respiratory_rate + Systolic_niBP, data = train, 
+                  family = "binomial")
+summary(logmodel1)
+```
 
+```{r}
+pred1 <- predict(logmodel1, type = "response")
+
+pred_out <- data.frame(truth = train$thirty_day_mort, predicted = pred1)
+
+predicted <- pred1>.25
+accuracy <- table(predicted, factor(train$thirty_day_mort))
+accuracy
+
+misclass <- (accuracy[2] + accuracy[3])/nrow(train)
+sensitivity <- accuracy[4]/(accuracy[4] + accuracy[3])
+specificity <- accuracy[1]/(accuracy[1] + accuracy[2])
+misclass
+sensitivity
+specificity
+
+summary(train$thirty_day_mort)
+```
 
 3. Compare model prediction performance on the test set.
+
+```{r}
+logmodel2 <- glm(thirty_day_mort ~ insurance + language + marital_status + 
+                  ethnicity + gender + anchor_age + Creatinine + Bicarbonate + 
+                    Potassium + Hematocrit + WBC + Sodium + Magnesium + Calcium + 
+                    Chloride + Glucose + Mean_niBP + Body_temp_F + Heart_Rate + 
+                    Respiratory_rate + Systolic_niBP, data = test, 
+                  family = "binomial")
+pred2 <- predict(logmodel2, type = "response")
+
+pred_out <- data.frame(truth = test$thirty_day_mort, predicted = pred2)
+
+predicted <- pred2>.25
+accuracy <- table(predicted, factor(test$thirty_day_mort))
+accuracy
+
+misclass <- (accuracy[2] + accuracy[3])/nrow(test)
+sensitivity <- accuracy[4]/(accuracy[4] + accuracy[3])
+specificity <- accuracy[1]/(accuracy[1] + accuracy[2])
+misclass
+sensitivity
+specificity
+```
