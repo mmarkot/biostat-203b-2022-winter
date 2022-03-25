@@ -1,0 +1,298 @@
+---
+title: "Biostat 203B Homework 4"
+subtitle: Due Mar 18 @ 11:59PM
+output:
+  # ioslides_presentation: default
+  html_document:
+    toc: true
+    toc_depth: 4
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+Display machine information:
+```{r}
+sessionInfo()
+```
+Load database libraries and the tidyverse frontend:
+```{r}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(lubridate))
+suppressPackageStartupMessages(library(miceRanger))
+```
+
+## Q1. Missing data
+
+Through the Shiny app developed in HW3, we observe abundant missing values in the MIMIC-IV ICU cohort we created. In this question, we use multiple imputation to obtain a data set without missing values.
+
+0. Read following tutorials on the R package miceRanger for imputation: <https://github.com/farrellday/miceRanger>, <https://cran.r-project.org/web/packages/miceRanger/vignettes/miceAlgorithm.html>.
+
+    A more thorough book treatment of the practical imputation strategies is the book [*_Flexible Imputation of Missing Data_*](https://stefvanbuuren.name/fimd/) by Stef van Buuren. 
+
+1. Explain the jargon MCAR, MAR, and MNAR.
+
+**Solution:** MCAR refers to data missing completely at random. This means that 
+there is no pattern to the data that is missing and there is no difference 
+between observtions with missing and non-missing data. If diagnostic plots 
+differ between the imputed and non-missing data, this can mean that MCAR does 
+not apply. MAR means missing at random. This is data that is missing 
+correlatedly with an observed variable. In this case there is information as to 
+why the data is missing for certain observations. MNAR mean missing not at 
+random. This category explains cases where there is a pattern to the missing 
+data but it does not fit the MAR definition because the explanation of the 
+pattern is unobserved. Essentially the correlatedness of the missing data is 
+clear but the cause is unknown.
+
+2. Explain in a couple of sentences how the Multiple Imputation by Chained Equations (MICE) work.
+
+**Solution:** MICE iteratively imputes data for missing values going variable by
+variable using all other variables. Missing data is first imputed randomly and 
+then the full data for all columns but one are used to predict values for that 
+one with random forest. This is repeated for all variables, and if necessary the
+entire process can be repeated if the values have not converged.
+
+3. Perform a data quality check of the ICU stays data. Discard variables with substantial missingness, say >5000 `NA`s. Replace apparent data entry errors by `NA`s.
+
+```{r}
+mimic_icu <- read_rds("mimic_ICU_cohort.rds")
+```
+
+```{r eval= F}
+summary(mimic_icu)
+```
+
+```{r}
+mimic_icu <- select(mimic_icu, -19, -20)
+```
+
+```{r}
+mimic_icu <- mimic_icu %>% 
+  mutate(Creatinine = ifelse(Creatinine > 40, NA, unlist(Creatinine)) %>% 
+           as.numeric) %>% 
+  mutate(WBC = ifelse(WBC > 100, NA, unlist(WBC)) %>% 
+           as.numeric)  %>% 
+  mutate(Glucose = ifelse(Glucose > 300, NA, unlist(Glucose)) %>% 
+           as.numeric)  %>% 
+  mutate(Mean_niBP = ifelse(Mean_niBP > 300 | Mean_niBP < 10, NA, 
+              unlist(Mean_niBP)) %>% 
+           as.numeric)  %>% 
+  mutate(Body_temp_F = ifelse(Body_temp_F < 70, NA, unlist(Body_temp_F)) %>% 
+           as.numeric) %>% 
+  mutate(Heart_Rate = ifelse(Heart_Rate < 5, NA, unlist(Heart_Rate)) %>% 
+           as.numeric) %>% 
+  mutate(Respiratory_rate = ifelse(Respiratory_rate < 1 | Respiratory_rate > 100
+                                   , NA, unlist(Respiratory_rate)) %>% 
+           as.numeric) %>% 
+  mutate(Systolic_niBP = ifelse(Systolic_niBP > 300 | Systolic_niBP < 10, NA, 
+              unlist(Systolic_niBP)) %>% 
+           as.numeric)
+mimic_icu$subject_id <- as.character(mimic_icu$subject_id)
+mimic_icu$stay_id <- as.character(mimic_icu$stay_id)
+mimic_icu$insurance <- as.factor(mimic_icu$insurance)
+mimic_icu$gender <- as.factor(mimic_icu$gender)
+mimic_icu$marital_status <- as.factor(mimic_icu$marital_status)
+mimic_icu$language <- as.factor(mimic_icu$language)
+```
+
+4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
+
+```{r}
+mimic_icu <- select(mimic_icu, 1, 4, 15:18, 20:21, 39:48, 54:58, 61)
+```
+
+```{r, eval=FALSE}
+seqTime <- system.time(
+  miceObj <- miceRanger(
+      mimic_icu, 
+      m=3,
+      returnModels = FALSE,
+      verbose=FALSE,
+      maxiter = 10
+  )
+)
+miceObj
+write_rds(completeData(miceObj), "mimic_icu.rds")
+saveRDS(miceObj, "miceObj.rds")
+```
+
+```{r}
+mimic <- read_rds("mimic_icu.rds")
+mice_Obj <- read_rds("miceObj.rds")
+```
+
+5. Make imputation diagnostic plots and explain what they mean.
+
+```{r}
+
+plotDistributions(mice_Obj,vars='allNumeric')
+```
+**Solution:** The density for all variables of each model shows very little 
+deviation from the non-missing data. The one observation of note is that the 
+imputed models have slightly higher maximum densities for many of the variables.  
+
+
+6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.
+
+```{r}
+mimic_1 <- mimic[[1]]
+```
+
+**Solution:** The correct multiple imputation strategy is to perform analysis 
+on all imputed data sets and average those results, to capture the variability 
+of the imputed data. Averaging all of the data sets before analysis does not 
+capture the variation and neither does choosing one imputed data set.
+
+## Q2. Predicting 30-day mortality
+
+Develop at least two analytic approaches for predicting the 30-day mortality of patients admitted to ICU using demographic information (gender, age, marital status, ethnicity), first lab measurements during ICU stay, and first vital measurements during ICU stay. For example, you can use (1) logistic regression (`glm()` function in base R or keras), (2) logistic regression with lasso penalty (glmnet or keras package), (3) random forest (randomForest package), or (4) neural network (keras package).
+
+1. Partition data into 80% training set and 20% test set. Stratify partitioning according the 30-day mortality status.
+
+```{r}
+mimic_d <- mimic_1[which(mimic_1$thirty_day_mort==TRUE)] 
+mimic_a <- mimic_1[-which(mimic_1$thirty_day_mort==TRUE)]
+```
+
+```{r}
+set.seed(12345)
+test1_num <- sample(0.2 * nrow(mimic_d))
+test1 <- mimic_d[test1_num]
+train1 <- mimic_d[-test1_num]
+
+test2_num <- sample(0.2 * nrow(mimic_a))
+test2 <- mimic_a[test2_num]
+train2 <- mimic_a[-test2_num]
+
+test <- rbind(test1, test2)
+train <- rbind(train1, train2)
+
+rm(mimic_d)
+rm(test1)
+rm(test1_num)
+rm(mimic_a)
+rm(train1)
+rm(train2)
+rm(test2)
+rm(test2_num)
+```
+
+2. Train the models using the training set.
+
+## Logistic Regression Model
+```{r}
+logmodel1 <-  glm(thirty_day_mort ~ insurance + language + marital_status + 
+                  ethnicity + gender + anchor_age + Creatinine + Bicarbonate + 
+                    Potassium + Hematocrit + WBC + Sodium + Magnesium + Calcium + 
+                    Chloride + Glucose + Mean_niBP + Body_temp_F + Heart_Rate + 
+                    Respiratory_rate + Systolic_niBP, data = train, 
+                  family = "binomial")
+summary(logmodel1)
+```
+
+```{r}
+pred1 <- predict(logmodel1, type = "response")
+
+pred_out <- data.frame(truth = train$thirty_day_mort, predicted = pred1)
+
+predicted <- pred1>.50
+accuracy <- table(predicted, factor(train$thirty_day_mort))
+accuracy
+
+misclass <- (accuracy[2] + accuracy[3])/nrow(train)
+sensitivity <- accuracy[4]/(accuracy[4] + accuracy[3])
+specificity <- accuracy[1]/(accuracy[1] + accuracy[2])
+misclass
+sensitivity
+specificity
+
+```
+
+## Random Forest Model
+
+```{r}
+library(randomForest)
+```
+
+```{r}
+train$thirty_day_mort_fac <- as.factor(train$thirty_day_mort)
+rfmodel1 <- randomForest(thirty_day_mort_fac ~ gender + anchor_age + 
+                Creatinine + Bicarbonate + Potassium + Hematocrit + WBC + 
+                Sodium + Magnesium + Calcium + Glucose + Mean_niBP + 
+                Body_temp_F + Heart_Rate + Respiratory_rate + Systolic_niBP,
+                data = train, nodesize = 5, ntree=500)
+print(rfmodel1)
+```
+
+```{r}
+pred1 <- predict(rfmodel1, train)
+pred_out <- data.frame(truth = train$thirty_day_mort, predicted = pred1)
+
+accuracy <- table(pred1, factor(train$thirty_day_mort))
+accuracy
+
+misclass <- (accuracy[2] + accuracy[3])/nrow(train)
+sensitivity <- accuracy[4]/(accuracy[4] + accuracy[3])
+specificity <- accuracy[1]/(accuracy[1] + accuracy[2])
+misclass
+sensitivity
+specificity
+```
+
+3. Compare model prediction performance on the test set.
+
+## Logistic Regression Model
+```{r}
+logmodel2 <- glm(thirty_day_mort ~ insurance + language + marital_status + 
+                  ethnicity + gender + anchor_age + Creatinine + Bicarbonate + 
+                    Potassium + Hematocrit + WBC + Sodium + Magnesium + Calcium + 
+                    Chloride + Glucose + Mean_niBP + Body_temp_F + Heart_Rate + 
+                    Respiratory_rate + Systolic_niBP, data = test, 
+                  family = "binomial")
+```
+
+```{r}
+pred2 <- predict(logmodel2, type = "response")
+
+pred_out <- data.frame(truth = test$thirty_day_mort, predicted = pred2)
+
+predicted <- pred2>.50
+accuracy <- table(predicted, factor(test$thirty_day_mort))
+accuracy
+
+misclass <- (accuracy[2] + accuracy[3])/nrow(test)
+sensitivity <- accuracy[4]/(accuracy[4] + accuracy[3])
+specificity <- accuracy[1]/(accuracy[1] + accuracy[2])
+misclass
+sensitivity
+specificity
+```
+
+## Random Forest
+```{r}
+test$thirty_day_mort_fac <- as.factor(test$thirty_day_mort)
+```
+
+```{r}
+rfmodel2 <- randomForest(thirty_day_mort_fac ~ gender + anchor_age + 
+                Creatinine + Bicarbonate + Potassium + Hematocrit + WBC + 
+                Sodium + Magnesium + Calcium + Glucose + Mean_niBP + 
+                Body_temp_F + Heart_Rate + Respiratory_rate + Systolic_niBP,
+                data = test, nodesize = 5, ntree=500)
+```
+
+```{r}
+pred2 <- predict(rfmodel2, test)
+pred_out <- data.frame(truth = test$thirty_day_mort, predicted = pred2)
+
+accuracy <- table(pred2, factor(test$thirty_day_mort))
+accuracy
+
+misclass <- (accuracy[2] + accuracy[3])/nrow(train)
+sensitivity <- accuracy[4]/(accuracy[4] + accuracy[3])
+specificity <- accuracy[1]/(accuracy[1] + accuracy[2])
+misclass
+sensitivity
+specificity
+```
